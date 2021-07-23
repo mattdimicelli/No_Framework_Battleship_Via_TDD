@@ -1,6 +1,8 @@
 export default class Ship {
     constructor(shipType) {
         this.shipType = shipType;
+        this.damage = new Set();
+
         switch (shipType) {
         case 'Destroyer':
             this.length = 2;
@@ -18,12 +20,14 @@ export default class Ship {
             this.length = 5;
             break;
         }
-        this.location = null;
-        this.sunk = false;
     }
 
-    setLocation(...locations) {
-        this.location = locations;
+    hit(location) {
+        this.damage.add(location);
+    }
+
+    isSunk() {
+        return (this.length === this.damage.size);
     }
 }
 
