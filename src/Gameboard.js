@@ -3,7 +3,7 @@ import Ship from './Ship';
 class Gameboard {
     constructor() {
         this.occupiedLocations = new Map();
-        this.missedShots = new Set();
+        this.missedShotsFromOpponent = new Set();
     
     }
 
@@ -34,11 +34,11 @@ class Gameboard {
                 return ship.hit(locationCoordinates);
             } 
         }
-        this.missedShots.add(locationCoordinates);
+        this.missedShotsFromOpponent.add(locationCoordinates);
 
     }
 
-    getAllShipsAreSunk() {
+    getAllOfThisPlayersShipsAreSunk() {
         const arrOfShips = this.occupiedLocations.keys();
         for (let ship of arrOfShips) {
             if (ship.isSunk() === false) {

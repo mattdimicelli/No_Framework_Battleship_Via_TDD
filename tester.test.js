@@ -1,6 +1,9 @@
 import Ship from './src/Ship';
 import Gameboard from './src/Gameboard';
 import { expect, test } from '@jest/globals';
+import Player from './src/Player';
+import ComputerPlayer from './src/ComputerPlayer';
+import gameBoards from './src/GameLoop';
 
 
 test('creates a Destroyer with length of 2', () => {
@@ -81,7 +84,7 @@ test('gameboard calls the hit function on submarine if the submarine\'s location
 test('gameboard records a missed shot if a location that doesn\'t have a ship is attacked', () => {
     const p1PersonalGameboard = new Gameboard();
     p1PersonalGameboard.receiveAttack('E7');
-    expect(p1PersonalGameboard.missedShots).toEqual(new Set(['E7']));
+    expect(p1PersonalGameboard.missedShotsFromOpponent).toEqual(new Set(['E7']));
 });
 
 test('gameboard records multiple missed shots if those locations that are attacked don\'t have a ship', () => {
@@ -89,7 +92,7 @@ test('gameboard records multiple missed shots if those locations that are attack
     p1PersonalGameboard.receiveAttack('E7');
     p1PersonalGameboard.receiveAttack('A5');
     p1PersonalGameboard.receiveAttack('B2');
-    expect(p1PersonalGameboard.missedShots).toEqual(new Set(['E7','A5','B2']));
+    expect(p1PersonalGameboard.missedShotsFromOpponent).toEqual(new Set(['E7','A5','B2']));
 });
 
 test('gameboard correctly reports that all ships are sunk', function() {
@@ -103,7 +106,7 @@ test('gameboard correctly reports that all ships are sunk', function() {
     carrier.damage.add('D3');
     carrier.damage.add('D4');
     carrier.damage.add('D5');
-    expect(p1PersonalGameboard.getAllShipsAreSunk()).toBe(true);
+    expect(p1PersonalGameboard.getAllOfThisPlayersShipsAreSunk()).toBe(true);
 });
 
 test('gameboard correctly reports that not all ships are sunk', function() {
@@ -116,5 +119,18 @@ test('gameboard correctly reports that not all ships are sunk', function() {
     carrier.damage.add('D3');
     carrier.damage.add('D4');
     carrier.damage.add('D5');
-    expect(p1PersonalGameboard.getAllShipsAreSunk()).toBe(false);
+    expect(p1PersonalGameboard.getAllOfThisPlayersShipsAreSunk()).toBe(false);
+});
+
+test('player object has name of player', function () {
+    const matt = new Player('Matt');
+    expect(matt.name).toBe('Matt');
+});
+
+
+test('player can attack specific coordinates on the opponent\'s gameboard', function() {
+    const player = new Player('player');
+    const gameBoard = new Gameboard();
+    
+    expect(player.attack('A7', gameBoard)).toBe(gameBoard.receiveAttack('A7'));
 });
