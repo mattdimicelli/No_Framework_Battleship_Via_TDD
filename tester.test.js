@@ -134,3 +134,20 @@ test('player can attack specific coordinates on the opponent\'s gameboard', func
     
     expect(player.attack('A7', gameBoard)).toBe(gameBoard.receiveAttack('A7'));
 });
+
+test('player keeps track of the shots that it has fired', function() {
+    const doofy = new Player('doofy');
+    const anEnemyGameBoard = new Gameboard();
+    doofy.attack('C8', anEnemyGameBoard);
+    doofy.attack('D9', anEnemyGameBoard);
+    expect(doofy.shotsFiredByThisPlayer.has('C8')).toBe(true);
+    expect(doofy.shotsFiredByThisPlayer.has('D9')).toBe(true);
+});
+
+test('the computer knows not to fire on a space that it has already fired at', function() {
+    const dumbComputer = new ComputerPlayer('doofy');
+    const anEnemyGameBoard = new Gameboard();
+    dumbComputer.attack('C7', anEnemyGameBoard);
+    dumbComputer.attack('C7', anEnemyGameBoard);
+    dumbComputer.attack('C7', anEnemyGameBoard);
+});
