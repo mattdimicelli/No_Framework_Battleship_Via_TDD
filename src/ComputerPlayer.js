@@ -10,14 +10,14 @@ class ComputerPlayer extends Player {
         return letters[randomIndex1] + numbers[randomIndex2];
     }
 
-    attack(coords, gameBoard) {
-        if (this.getCoordinatesHaveNotAlreadyBeenShotAtByThisPlayer(coords)) {
+    attack(gameBoard) {
+        let coords = this.generateRandomCoordinates;
+        if (!this.getCoordinatesHaveAlreadyBeenShotAtByThisPlayer(coords)) {
             gameBoard.receiveAttack(coords);
             this.shotsFiredByThisPlayer.add(coords);
         } else {
-            this.attack(this.generateRandomCoordinates(), gameBoard);
+            this.attack(gameBoard);
         }
-        
     }
 
 }

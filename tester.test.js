@@ -173,18 +173,23 @@ test('player keeps track of the shots that it has fired', function() {
 });
 
 test('generateRandomCoordinates() only makes appropriate Battleship coordinates', function() {
+    const computer = new ComputerPlayer();
+    for (let i = 0; i < 100; i++) {
+        expect(computer.generateRandomCoordinates()).toMatch(/[A-J](?:[0-9]|(?:10))/);
+    }
+});
 
-})
-
-// test('the computer knows not to fire on a space that it has already fired at', function() {
-//     const computer = new ComputerPlayer('doofy');
-//     const anEnemyGameBoard = new Gameboard();
-//     computer.attack('C7', anEnemyGameBoard);
-//     computer.attack('C7', anEnemyGameBoard);
-//     computer.attack('C7', anEnemyGameBoard);
-//     computer.attack('C7', anEnemyGameBoard);
-//     expect(computer.shotsFiredByThisPlayer.size).toBe(4);
-// });
+test('the computer knows not to fire on a space that it has already fired at', function() {
+    const computer = new ComputerPlayer('doofy');
+    const anEnemyGameBoard = new Gameboard();
+    computer.generateRandomCoordinates = jest.fn();
+    computer.generateRandomCoordinates.mockReturnValueOnce('C7').mockReturnValueOnce('C7').mockReturnValueOnce('C7').mockReturnValueOnce('C8');
+    computer.attack(anEnemyGameBoard);
+    expect(computer.generateRandomCoordinates.mock.calls.length).toBe(1);
+    // expect(computer.shotsFiredByThisPlayer.size).toBe(2);
+    // expect(computer.shotsFiredByThisPlayer.has('C7')).toBe(true);
+    // expect(computer.shotsFiredByThisPlayer.has('C8')).toBe(true);
+});
 
 
 
