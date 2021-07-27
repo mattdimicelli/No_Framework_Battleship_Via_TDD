@@ -7,15 +7,15 @@ class Player {
     }
 
     attack(coords, gameBoard) {
-        if (this.getCoordinatesHaveNotAlreadyBeenShotAtByThisPlayer(coords)) {
+        if (!this.getCoordinatesHaveAlreadyBeenShotAtByThisPlayer(coords)) {
             gameBoard.receiveAttack(coords);
             this.shotsFiredByThisPlayer.add(coords);
         }
         
     }
 
-    getCoordinatesHaveNotAlreadyBeenShotAtByThisPlayer(coords) {
-        return !this.shotsFiredByThisPlayer.has(coords);
+    getCoordinatesHaveAlreadyBeenShotAtByThisPlayer(coords) {
+        return this.shotsFiredByThisPlayer.has(coords);
     }
 }
 

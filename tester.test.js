@@ -3,123 +3,139 @@ import Gameboard from './src/Gameboard';
 import { expect, test } from '@jest/globals';
 import Player from './src/Player';
 import ComputerPlayer from './src/ComputerPlayer';
-import gameBoards from './src/GameLoop';
 
 
-test('creates a Destroyer with length of 2', () => {
-    expect(new Ship('Destroyer').length).toBe(2);
+describe('Ship constructor', () => {
+    test('Ships should be of following lengths: Carrier 5, Battleship 4, Cruiser 3, Submarine 2, Destroyer 2', () => {
+        expect(new Ship('Destroyer').length).toBe(2);
+        expect(new Ship('Battleship').length).toBe(4);
+        expect(new Ship('Carrier').length).toBe(5);
+        expect(new Ship('Cruiser').length).toBe(3);
+        expect(new Ship('Submarine').length).toBe(3);
+    });
+
+    test('ship object knows where it has been hit', () => {
+        const sub = new Ship('Submarine');
+        sub.hit('A1');
+        expect(sub.damage).toEqual(new Set(['A1']));
+    });
+
+    test('function isSunk() determines that a Destroyer that has been hit two times is sunk ', function() {
+        const destroyer = new Ship('Destroyer');
+        destroyer.hit('A1');
+        destroyer.hit('A2');
+        expect(destroyer.isSunk()).toBe(true);
+    });  
+
+    test('function isSunk() determines that a Destroyer that has been hit once is not sunk ', function() {
+        const destroyer = new Ship('Destroyer');
+        destroyer.hit('B2');
+        expect(destroyer.isSunk()).toBe(false);
+    }); 
 });
 
-test('create a Battleship with a length of 4', function () {
-    expect(new Ship('Battleship').length).toBe(4);
-});
+describe('gameboard module', function() {
+    test('Gameboard can place a destroyer at A1 and A2 by calling ship constructor', function() {
+        const p1PersonalGameboard = new Gameboard();
+        p1PersonalGameboard.createShipAndPlaceItOnBoard('Destroyer', 'A1', 'A2');
+        const arr = [];
+        for (let value of p1PersonalGameboard.occupiedLocations.values()) {
+            arr.push(value);
+        }
+        expect(arr[0]).toEqual(new Set(['A1','A2']));
+    });
 
-test('ship can be hit if it\'s at that location', () => {
-    const sub = new Ship('Submarine');
-    sub.location = new Set(["A1","A2","A3"]);
-    sub.hit('A1');
-    expect(sub.damage).toEqual(new Set(['A1']));
-});
+    test('Gameboard can place submarine at E7, E8, E9 by calling ship constructor', function() {
+        const p1PersonalGameboard = new Gameboard();
+        p1PersonalGameboard.createShipAndPlaceItOnBoard('Submarine', 'E7','E8','E9');
+        const arr = [];
+        for (let value of p1PersonalGameboard.occupiedLocations.values()) {
+            arr.push(value);
+        }
+        expect(arr[0]).toEqual(new Set(['E7','E8', 'E9']));
+    });
 
-test('function isSunk() determines that a Destroyer that has been hit two times is sunk ', function() {
-    const destroyer = new Ship('Destroyer');
-    destroyer.location = new Set (['A1','A2']);
-    destroyer.damage = new Set(['A1','A2']);
-    expect(destroyer.isSunk()).toBe(true);
-});  
+    test('gameboard keeps track of the position of two ships', function() {
+        const p1PersonalGameboard = new Gameboard();
+        p1PersonalGameboard.createShipAndPlaceItOnBoard('Submarine', 'E7','E8','E9');
+        p1PersonalGameboard.createShipAndPlaceItOnBoard('Destroyer', 'A1','A2');
+        const map = new Map();
+        map.set(new Ship('Submarine'), new Set(['E7', 'E8', 'E9']));
+        map.set(new Ship('Destroyer'), new Set(['A1', 'A2']));
+        expect(p1PersonalGameboard.occupiedLocations).toEqual(map);
+    });
 
-test('function isSunk() determines that a Destroyer that has been hit once is not sunk ', function() {
-    const destroyer = new Ship('Destroyer');
-    destroyer.location = new Set (['A1','A2']);
-    destroyer.damage = new Set(['A1']);
-    expect(destroyer.isSunk()).toBe(false);
-}); 
+    test('Submarine cannot be placed at E7, E8, E9 if there is a Destroyer on E7 and E8', function() {
+        const p1PersonalGameboard = new Gameboard();
+        p1PersonalGameboard.createShipAndPlaceItOnBoard('Destroyer', 'E7','E8');
+        const returnValue = p1PersonalGameboard.createShipAndPlaceItOnBoard('Submarine', 'E7','E8','E9');
+        expect(returnValue).toBe('Cannot place ship, location already occupied');
+        const arr = [];
+        for (let entry of p1PersonalGameboard.occupiedLocations.entries()) {
+            arr.push(entry);
+        }
+        expect(arr).toEqual([[new Ship('Destroyer'), new Set(['E7', 'E8'])]]);
+    });
 
-test('Destroyer ship can be placed at A1 and A2', function() {
-    const p1PersonalGameboard = new Gameboard();
-    const destroyer = p1PersonalGameboard.createShipAndPlaceItOnBoard('Destroyer', 'A1', 'A2');
+    test('receiveAttack() calls the hit function on submarine with the attack coordinates if the submarine\'s location is attacked', function() {
+        const p1PersonalGameboard = new Gameboard();
+        const sub = new Ship('Submarine');
+        p1PersonalGameboard.occupiedLocations.set(sub, new Set(['E7','E8','E9']));
+        sub.hit = jest.fn();
+        p1PersonalGameboard.receiveAttack('E7');
+        expect(sub.hit.mock.calls[0][0]).toBe('E7');
+    });
 
-    expect(p1PersonalGameboard.occupiedLocations.has(destroyer));
-    expect(p1PersonalGameboard.occupiedLocations.get(destroyer)).toEqual(new Set(['A1','A2']));
-});
+    test('gameboard records a missed shot if a location that doesn\'t have a ship is attacked', () => {
+        const p1PersonalGameboard = new Gameboard();
+        p1PersonalGameboard.receiveAttack('E7');
+        expect(p1PersonalGameboard.missedShotsFromOpponent).toEqual(new Set(['E7']));
+    });
 
-test('Submarine can be placed at E7, E8, E9', function() {
-    const p1PersonalGameboard = new Gameboard();
-    const submarine = p1PersonalGameboard.createShipAndPlaceItOnBoard('Submarine', 'E7','E8','E9');
-    expect(p1PersonalGameboard.occupiedLocations.has(submarine));
-    expect(p1PersonalGameboard.occupiedLocations.get(submarine)).toEqual(new Set(['E7','E8', 'E9']));});
+    test('gameboard records multiple missed shots if those locations that are attacked don\'t have a ship', () => {
+        const p1PersonalGameboard = new Gameboard();
+        p1PersonalGameboard.receiveAttack('E7');
+        p1PersonalGameboard.receiveAttack('A5');
+        p1PersonalGameboard.receiveAttack('B2');
+        expect(p1PersonalGameboard.missedShotsFromOpponent).toEqual(new Set(['E7','A5','B2']));
+    });
 
-test('gameboard keeps track of the position of a ship', function() {
-    const p1PersonalGameboard = new Gameboard();
-    const submarine = p1PersonalGameboard.createShipAndPlaceItOnBoard('Submarine', 'E7','E8','E9');
-    const map = new Map();
-    map.set(submarine, new Set(['E7', 'E8', 'E9']));
-    expect(p1PersonalGameboard.occupiedLocations).toEqual(map);
-});
+    test('gameboard correctly reports that all ships are sunk', function() {
+        const p1PersonalGameboard = new Gameboard();
+        p1PersonalGameboard.createShipAndPlaceItOnBoard('Destroyer', 'A3', 'A4');
+        p1PersonalGameboard.createShipAndPlaceItOnBoard('Carrier', 'D1', 'D2', 'D3', 'D4', 'D5');
+        for (let ship of p1PersonalGameboard.occupiedLocations.keys()) {
+            if (ship.shipType === 'Destroyer') {
+                ship.damage.add('A3');
+                ship.damage.add('A4');
+            } else if (ship.shipType === 'Carrier') {
+                ship.damage.add('D1');
+                ship.damage.add('D2');
+                ship.damage.add('D3');
+                ship.damage.add('D4');
+                ship.damage.add('D5');
+            }
+        }
+        expect(p1PersonalGameboard.getAllOfThisPlayersShipsAreSunk()).toBe(true);
+    });
 
-test('gameboard keeps track of the position of two ships', function() {
-    const p1PersonalGameboard = new Gameboard();
-    const submarine = p1PersonalGameboard.createShipAndPlaceItOnBoard('Submarine', 'E7','E8','E9');
-    const destroyer = p1PersonalGameboard.createShipAndPlaceItOnBoard('Destroyer', 'A1','A2');
-    const map = new Map();
-    map.set(submarine, new Set(['E7', 'E8', 'E9']));
-    map.set(destroyer, new Set(['A1', 'A2']));
-    expect(p1PersonalGameboard.occupiedLocations).toEqual(map);
-});
-
-test('Submarine cannot be placed at E7, E8, E9 if there is a Destroyer on E7 and E8', function() {
-    const p1PersonalGameboard = new Gameboard();
-    p1PersonalGameboard.createShipAndPlaceItOnBoard('Destroyer', 'E7','E8');
-    const returnValue = p1PersonalGameboard.createShipAndPlaceItOnBoard('Submarine', 'E7','E8','E9');
-    expect(returnValue).toBe('Cannot place ship, location already occupied');
-    expect(Object.keys(p1PersonalGameboard.occupiedLocations).includes('Submarine')).toBe(false);
-});
-
-test('gameboard calls the hit function on submarine if the submarine\'s location is attacked', function() {
-    const p1PersonalGameboard = new Gameboard();
-    const submarine = p1PersonalGameboard.createShipAndPlaceItOnBoard('Submarine', 'E7','E8','E9');
-    expect(p1PersonalGameboard.receiveAttack('E7')).toBe(submarine.hit('E7'));
-});
-
-test('gameboard records a missed shot if a location that doesn\'t have a ship is attacked', () => {
-    const p1PersonalGameboard = new Gameboard();
-    p1PersonalGameboard.receiveAttack('E7');
-    expect(p1PersonalGameboard.missedShotsFromOpponent).toEqual(new Set(['E7']));
-});
-
-test('gameboard records multiple missed shots if those locations that are attacked don\'t have a ship', () => {
-    const p1PersonalGameboard = new Gameboard();
-    p1PersonalGameboard.receiveAttack('E7');
-    p1PersonalGameboard.receiveAttack('A5');
-    p1PersonalGameboard.receiveAttack('B2');
-    expect(p1PersonalGameboard.missedShotsFromOpponent).toEqual(new Set(['E7','A5','B2']));
-});
-
-test('gameboard correctly reports that all ships are sunk', function() {
-    const p1PersonalGameboard = new Gameboard();
-    const destroyer = p1PersonalGameboard.createShipAndPlaceItOnBoard('Destroyer', 'A3', 'A4');
-    const carrier = p1PersonalGameboard.createShipAndPlaceItOnBoard('Carrier', 'D1', 'D2', 'D3', 'D4', 'D5');
-    destroyer.damage.add('A3');
-    destroyer.damage.add('A4');
-    carrier.damage.add('D1');
-    carrier.damage.add('D2');
-    carrier.damage.add('D3');
-    carrier.damage.add('D4');
-    carrier.damage.add('D5');
-    expect(p1PersonalGameboard.getAllOfThisPlayersShipsAreSunk()).toBe(true);
-});
-
-test('gameboard correctly reports that not all ships are sunk', function() {
-    const p1PersonalGameboard = new Gameboard();
-    const destroyer = p1PersonalGameboard.createShipAndPlaceItOnBoard('Destroyer', 'A3', 'A4');
-    const carrier = p1PersonalGameboard.createShipAndPlaceItOnBoard('Carrier', 'D1', 'D2', 'D3', 'D4', 'D5');
-    destroyer.damage.add('A3');
-    destroyer.damage.add('A4');
-    carrier.damage.add('D1');
-    carrier.damage.add('D3');
-    carrier.damage.add('D4');
-    carrier.damage.add('D5');
-    expect(p1PersonalGameboard.getAllOfThisPlayersShipsAreSunk()).toBe(false);
+    test('gameboard correctly reports that not all ships are sunk', function() {
+        const p1PersonalGameboard = new Gameboard();
+        p1PersonalGameboard.createShipAndPlaceItOnBoard('Destroyer', 'A3', 'A4');
+        p1PersonalGameboard.createShipAndPlaceItOnBoard('Carrier', 'D1', 'D2', 'D3', 'D4', 'D5');
+        for (let ship of p1PersonalGameboard.occupiedLocations.keys()) {
+            if (ship.shipType === 'Destroyer') {
+                ship.damage.add('A3');
+                ship.damage.add('A4');
+            } else if (ship.shipType === 'Carrier') {
+                ship.damage.add('D1');
+                ship.damage.add('D3');
+                ship.damage.add('D4');
+                ship.damage.add('D5');
+            }
+        }
+        expect(p1PersonalGameboard.getAllOfThisPlayersShipsAreSunk()).toBe(false);
+    });
 });
 
 test('player object has name of player', function () {
@@ -128,11 +144,23 @@ test('player object has name of player', function () {
 });
 
 
-test('player can attack specific coordinates on the opponent\'s gameboard', function() {
-    const player = new Player('player');
-    const gameBoard = new Gameboard();
-    
-    expect(player.attack('A7', gameBoard)).toBe(gameBoard.receiveAttack('A7'));
+test('player can attack a ship on the opponent\'s gameboard', function() {
+    const matt = new Player('Matt');
+    const enemyGameBoard = new Gameboard();
+    enemyGameBoard.createShipAndPlaceItOnBoard('Destroyer', 'B1', 'B2');
+    matt.attack('B2', enemyGameBoard);
+    let damage;
+    for (let ship of enemyGameBoard.occupiedLocations.keys()) {
+        damage = ship.damage;
+    }
+    expect(damage.has('B2')).toBe(true);
+});
+
+test('when an attack on the enemy gameboard doesn\'t hit a ship, the miss is recorded on the enemy gameboard', function () {
+    const enemyGameBoard = new Gameboard;
+    const matt = new Player('Matt');
+    matt.attack('E7', enemyGameBoard);
+    expect(enemyGameBoard.missedShotsFromOpponent.has('E7')).toBe(true);
 });
 
 test('player keeps track of the shots that it has fired', function() {
@@ -144,10 +172,20 @@ test('player keeps track of the shots that it has fired', function() {
     expect(doofy.shotsFiredByThisPlayer.has('D9')).toBe(true);
 });
 
-test('the computer knows not to fire on a space that it has already fired at', function() {
-    const dumbComputer = new ComputerPlayer('doofy');
-    const anEnemyGameBoard = new Gameboard();
-    dumbComputer.attack('C7', anEnemyGameBoard);
-    dumbComputer.attack('C7', anEnemyGameBoard);
-    dumbComputer.attack('C7', anEnemyGameBoard);
-});
+test('generateRandomCoordinates() only makes appropriate Battleship coordinates', function() {
+
+})
+
+// test('the computer knows not to fire on a space that it has already fired at', function() {
+//     const computer = new ComputerPlayer('doofy');
+//     const anEnemyGameBoard = new Gameboard();
+//     computer.attack('C7', anEnemyGameBoard);
+//     computer.attack('C7', anEnemyGameBoard);
+//     computer.attack('C7', anEnemyGameBoard);
+//     computer.attack('C7', anEnemyGameBoard);
+//     expect(computer.shotsFiredByThisPlayer.size).toBe(4);
+// });
+
+
+
+

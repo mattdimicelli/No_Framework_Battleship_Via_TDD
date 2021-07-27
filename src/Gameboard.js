@@ -13,20 +13,18 @@ class Gameboard {
         }
         const ship = new Ship(shipName);
         this.occupiedLocations.set(ship, new Set(locations));
-        return ship;
     }
 
     getAreAnyOfTheLocationsOccupied(locations) {
-        if(this.occupiedLocations.size > 0) {
-            for (let setOfLocations of this.occupiedLocations.values()) {
-                for (let location of locations) {
-                    if(setOfLocations.has(location)) {
-                        return true;
-                    }
+        for (let setOfLocations of this.occupiedLocations.values()) {
+            for (let location of locations) {
+                if(setOfLocations.has(location)) {
+                    return true;
                 }
             }
         }
     }
+
 
     receiveAttack(locationCoordinates) {
         for (let [ship , setOfLocations] of this.occupiedLocations.entries()) {

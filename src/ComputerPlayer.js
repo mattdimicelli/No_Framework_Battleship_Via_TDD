@@ -15,7 +15,7 @@ class ComputerPlayer extends Player {
             gameBoard.receiveAttack(coords);
             this.shotsFiredByThisPlayer.add(coords);
         } else {
-            this.attack(this.generateRandomCoordinates, gameBoard);
+            this.attack(this.generateRandomCoordinates(), gameBoard);
         }
         
     }
