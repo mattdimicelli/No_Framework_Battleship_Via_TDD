@@ -1,6 +1,30 @@
-import './styles.css';
-import Icon from './icon.png';
+// import './styles.css';
+// import Icon from './icon.png';
+import Player from './Player';
+import ComputerPlayer from './ComputerPlayer';
+import Gameboard from './Gameboard';
+import Ship from './Ship';
 
+
+class GameLoop {
+    createPlayers(humanName, computerName) {
+        return { 
+            human: new Player(humanName),
+            computer: new ComputerPlayer(computerName),
+        };
+    }
+    setupBoards() {
+        return {
+            human: new Gameboard(),
+            computer: new Gameboard(),
+        };
+    }
+   
+
+}
+
+const gameLoop = new GameLoop();
+export default gameLoop;
 // The game is played on four grids, two for each player
 // 10×10 (A-J)
 // Before play begins, each player secretly arranges their ships on their

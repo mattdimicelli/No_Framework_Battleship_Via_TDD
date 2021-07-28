@@ -3,6 +3,7 @@ import Gameboard from './src/Gameboard';
 import { expect, test } from '@jest/globals';
 import Player from './src/Player';
 import ComputerPlayer from './src/ComputerPlayer';
+import gameLoop from './src/index';
 
 
 describe('Ship constructor', () => {
@@ -136,59 +137,81 @@ describe('gameboard module', function() {
         }
         expect(p1PersonalGameboard.getAllOfThisPlayersShipsAreSunk()).toBe(false);
     });
+
+    test('when an attack on the enemy gameboard doesn\'t hit a ship, the miss is recorded on the enemy gameboard', function () {
+        const enemyGameBoard = new Gameboard;
+        const matt = new Player('Matt');
+        matt.attack('E7', enemyGameBoard);
+        expect(enemyGameBoard.missedShotsFromOpponent.has('E7')).toBe(true);
+    });
 });
 
-test('player object has name of player', function () {
-    const matt = new Player('Matt');
-    expect(matt.name).toBe('Matt');
+describe('the player', () => {
+    test('player object has name of player', function () {
+        const matt = new Player('Matt');
+        expect(matt.name).toBe('Matt');
+    });
+
+
+    test('player can attack a ship on the opponent\'s gameboard', function() {
+        const matt = new Player('Matt');
+        const enemyGameBoard = new Gameboard();
+        enemyGameBoard.createShipAndPlaceItOnBoard('Destroyer', 'B1', 'B2');
+        matt.attack('B2', enemyGameBoard);
+        let damage;
+        for (let ship of enemyGameBoard.occupiedLocations.keys()) {
+            damage = ship.damage;
+        }
+        expect(damage.has('B2')).toBe(true);
+    });
+
+
+    test('player keeps track of the shots that it has fired', function() {
+        const doofy = new Player('doofy');
+        const anEnemyGameBoard = new Gameboard();
+        doofy.attack('C8', anEnemyGameBoard);
+        doofy.attack('D9', anEnemyGameBoard);
+        expect(doofy.shotsFiredByThisPlayer.has('C8')).toBe(true);
+        expect(doofy.shotsFiredByThisPlayer.has('D9')).toBe(true);
+    });
 });
 
+describe('the computer player', function() {
+    test('generateRandomCoordinates() only makes appropriate Battleship coordinates', function() {
+        const computer = new ComputerPlayer();
+        for (let i = 0; i < 100; i++) {
+            expect(computer.generateRandomCoordinates()).toMatch(/[A-J](?:[0-9]|(?:10))/);
+        }
+    });
 
-test('player can attack a ship on the opponent\'s gameboard', function() {
-    const matt = new Player('Matt');
-    const enemyGameBoard = new Gameboard();
-    enemyGameBoard.createShipAndPlaceItOnBoard('Destroyer', 'B1', 'B2');
-    matt.attack('B2', enemyGameBoard);
-    let damage;
-    for (let ship of enemyGameBoard.occupiedLocations.keys()) {
-        damage = ship.damage;
-    }
-    expect(damage.has('B2')).toBe(true);
+    test('the computer knows not to fire on a space that it has already fired at', function() {
+        const computer = new ComputerPlayer('doofy');
+        const anEnemyGameBoard = new Gameboard();
+        computer.generateRandomCoordinates = jest.fn();
+        computer.generateRandomCoordinates.mockReturnValueOnce('C7').mockReturnValueOnce('C7').mockReturnValueOnce('C7').mockReturnValueOnce('C8');
+        computer.attack(anEnemyGameBoard);
+        computer.attack(anEnemyGameBoard);
+        expect(computer.generateRandomCoordinates.mock.calls.length).toBe(4);
+        expect(computer.shotsFiredByThisPlayer.size).toBe(2);
+        expect(computer.shotsFiredByThisPlayer.has('C7')).toBe(true);
+        expect(computer.shotsFiredByThisPlayer.has('C8')).toBe(true);
+    });
 });
 
-test('when an attack on the enemy gameboard doesn\'t hit a ship, the miss is recorded on the enemy gameboard', function () {
-    const enemyGameBoard = new Gameboard;
-    const matt = new Player('Matt');
-    matt.attack('E7', enemyGameBoard);
-    expect(enemyGameBoard.missedShotsFromOpponent.has('E7')).toBe(true);
+test('when setting up the game, the player and computer player are created with requested names.', function() {
+    const humanName = 'Matt';
+    const computerName = 'Mussolini';
+    const players = gameLoop.createPlayers(humanName, computerName);
+    expect(players.human.name).toBe('Matt');
+    expect(players.computer.name).toBe('Mussolini');
 });
 
-test('player keeps track of the shots that it has fired', function() {
-    const doofy = new Player('doofy');
-    const anEnemyGameBoard = new Gameboard();
-    doofy.attack('C8', anEnemyGameBoard);
-    doofy.attack('D9', anEnemyGameBoard);
-    expect(doofy.shotsFiredByThisPlayer.has('C8')).toBe(true);
-    expect(doofy.shotsFiredByThisPlayer.has('D9')).toBe(true);
-});
-
-test('generateRandomCoordinates() only makes appropriate Battleship coordinates', function() {
-    const computer = new ComputerPlayer();
-    for (let i = 0; i < 100; i++) {
-        expect(computer.generateRandomCoordinates()).toMatch(/[A-J](?:[0-9]|(?:10))/);
-    }
-});
-
-test('the computer knows not to fire on a space that it has already fired at', function() {
-    const computer = new ComputerPlayer('doofy');
-    const anEnemyGameBoard = new Gameboard();
-    computer.generateRandomCoordinates = jest.fn();
-    computer.generateRandomCoordinates.mockReturnValueOnce('C7').mockReturnValueOnce('C7').mockReturnValueOnce('C7').mockReturnValueOnce('C8');
-    computer.attack(anEnemyGameBoard);
-    expect(computer.generateRandomCoordinates.mock.calls.length).toBe(1);
-    // expect(computer.shotsFiredByThisPlayer.size).toBe(2);
-    // expect(computer.shotsFiredByThisPlayer.has('C7')).toBe(true);
-    // expect(computer.shotsFiredByThisPlayer.has('C8')).toBe(true);
+test('when setting up game a human board and a computer-enemy board are created', () => {
+    const boards = gameLoop.setupBoards();
+    expect(boards).toEqual({
+        human: new Gameboard(),
+        computer: new Gameboard(),
+    });
 });
 
 
