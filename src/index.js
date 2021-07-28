@@ -23,7 +23,20 @@ class GameLoop {
 
 }
 
+
 const gameLoop = new GameLoop();
+const boards = gameLoop.setupBoards();
+boards.human.createShipAndPlaceItOnBoard('Destroyer', 'A1','A2');
+boards.human.createShipAndPlaceItOnBoard('Battleship', 'B1','C1','D1','E1');
+boards.human.createShipAndPlaceItOnBoard('Cruiser', 'D3','D4', 'D5');
+boards.human.createShipAndPlaceItOnBoard('Submarine', 'E7','F7', 'G7');
+boards.human.createShipAndPlaceItOnBoard('Carrier', 'J1','J2', 'J3', 'J4', 'J5');
+
+boards.computer.createShipAndPlaceItOnBoard('Destroyer', 'A1','A2');
+boards.computer.createShipAndPlaceItOnBoard('Battleship', 'B1','C1','D1','E1');
+boards.computer.createShipAndPlaceItOnBoard('Cruiser', 'D3','D4', 'D5');
+boards.computer.createShipAndPlaceItOnBoard('Submarine', 'E7','F7', 'G7');
+boards.computer.createShipAndPlaceItOnBoard('Carrier', 'J1','J2', 'J3', 'J4', 'J5');
 export default gameLoop;
 // The game is played on four grids, two for each player
 // 10×10 (A-J)
