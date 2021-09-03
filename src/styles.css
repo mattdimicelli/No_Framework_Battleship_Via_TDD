@@ -1,5 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
-
+@font-face {
+    font-family: 'IronManOfWar';
+    src: url(./IronManOfWar002Ncv-ljOd.ttf) format('truetype');
+}
 
 .start-screen {
     background-image: url('./images/battleship.jpeg');
@@ -65,8 +68,7 @@ body {
 }
 
 .title {
-    font-family: 'Alfa Slab One', cursive;
-    font-family: 'Alfa Slab One', cursive;
+    font-family: 'IronManOfWar', cursive;
     color: white;
     background-color: #bd0404;
     padding: 0.12em 0.25em;
