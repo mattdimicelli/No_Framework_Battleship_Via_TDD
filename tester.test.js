@@ -3,7 +3,7 @@ import Gameboard from './src/Gameboard';
 import { expect, test } from '@jest/globals';
 import Player from './src/Player';
 import ComputerPlayer from './src/ComputerPlayer';
-import gameLoop from './src/index';
+
 
 
 describe('Ship constructor', () => {
@@ -18,7 +18,7 @@ describe('Ship constructor', () => {
     test('ship object knows where it has been hit', () => {
         const sub = new Ship('Submarine');
         sub.hit('A1');
-        expect(sub.damage).toEqual(new Set(['A1']));
+        expect(sub.damageLocations).toEqual(new Set(['A1']));
     });
 
     test('function isSunk() determines that a Destroyer that has been hit two times is sunk ', function() {
@@ -107,14 +107,14 @@ describe('gameboard module', function() {
         p1PersonalGameboard.createShipAndPlaceItOnBoard('Carrier', 'D1', 'D2', 'D3', 'D4', 'D5');
         for (let ship of p1PersonalGameboard.occupiedLocations.keys()) {
             if (ship.shipType === 'Destroyer') {
-                ship.damage.add('A3');
-                ship.damage.add('A4');
+                ship.damageLocations.add('A3');
+                ship.damageLocations.add('A4');
             } else if (ship.shipType === 'Carrier') {
-                ship.damage.add('D1');
-                ship.damage.add('D2');
-                ship.damage.add('D3');
-                ship.damage.add('D4');
-                ship.damage.add('D5');
+                ship.damageLocations.add('D1');
+                ship.damageLocations.add('D2');
+                ship.damageLocations.add('D3');
+                ship.damageLocations.add('D4');
+                ship.damageLocations.add('D5');
             }
         }
         expect(p1PersonalGameboard.getAllOfThisPlayersShipsAreSunk()).toBe(true);
@@ -126,13 +126,13 @@ describe('gameboard module', function() {
         p1PersonalGameboard.createShipAndPlaceItOnBoard('Carrier', 'D1', 'D2', 'D3', 'D4', 'D5');
         for (let ship of p1PersonalGameboard.occupiedLocations.keys()) {
             if (ship.shipType === 'Destroyer') {
-                ship.damage.add('A3');
-                ship.damage.add('A4');
+                ship.damageLocations.add('A3');
+                ship.damageLocations.add('A4');
             } else if (ship.shipType === 'Carrier') {
-                ship.damage.add('D1');
-                ship.damage.add('D3');
-                ship.damage.add('D4');
-                ship.damage.add('D5');
+                ship.damageLocations.add('D1');
+                ship.damageLocations.add('D3');
+                ship.damageLocations.add('D4');
+                ship.damageLocations.add('D5');
             }
         }
         expect(p1PersonalGameboard.getAllOfThisPlayersShipsAreSunk()).toBe(false);
@@ -160,7 +160,7 @@ describe('the player', () => {
         matt.attack('B2', enemyGameBoard);
         let damage;
         for (let ship of enemyGameBoard.occupiedLocations.keys()) {
-            damage = ship.damage;
+            damage = ship.damageLocations;
         }
         expect(damage.has('B2')).toBe(true);
     });
@@ -198,21 +198,10 @@ describe('the computer player', function() {
     });
 });
 
-test('when setting up the game, the player and computer player are created with requested names.', function() {
-    const humanName = 'Matt';
-    const computerName = 'Mussolini';
-    const players = gameLoop.createPlayers(humanName, computerName);
-    expect(players.human.name).toBe('Matt');
-    expect(players.computer.name).toBe('Mussolini');
-});
 
-test('when setting up game a human board and a computer-enemy board are created', () => {
-    const boards = gameLoop.setupBoards();
-    expect(boards).toEqual({
-        human: new Gameboard(),
-        computer: new Gameboard(),
-    });
-});
+
+
+
 
 
 

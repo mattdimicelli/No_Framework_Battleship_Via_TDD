@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
+
+
+.start-screen {
+    background-image: url('./images/battleship.jpeg');
+    background-size: cover;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 19px;
+    font-weight: bold;
+    color: white;
+}
+
+body {
+    margin: 0;
+}
+
+.name-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #020267;
+    padding: 1em;
+}
+
+.name-label {
+    text-align: center;
+}
+
+.name-input {
+    display: block;
+    margin: 1rem;
+    padding: 16px;
+    font-size: 19px;
+    font-weight: bold;
+    text-align: center;
+    border: none;
+}
+    
+.start-button {
+	background-color:#ffffff;
+	border-radius:2px;
+	display:inline-block;
+	cursor:pointer;
+	color:#000000;
+	font-size:19px;
+	font-weight:bold;
+	padding:16px;
+	text-decoration:none;
+    text-align: center;
+    transition: font-size 0.2s;
+    width: 180px;
+}
+.start-button:hover,
+.name-input:hover {
+	border: 2px solid black;
+    font-size: 21px;
+}
+.start-button:active {
+	position:relative;
+	top:1px;
+}
+
+.title {
+    font-family: 'Alfa Slab One', cursive;
+    font-family: 'Alfa Slab One', cursive;
+    color: white;
+    background-color: #bd0404;
+    padding: 0.12em 0.25em;
+    font-size: 5rem;
+}
+        

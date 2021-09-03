@@ -29,7 +29,8 @@ class Gameboard {
     receiveAttack(locationCoordinates) {
         for (let [ship , setOfLocations] of this.occupiedLocations.entries()) {
             if (setOfLocations.has(locationCoordinates)) {
-                return ship.hit(locationCoordinates);
+                ship.hit(locationCoordinates);
+                return;
             } 
         }
         this.missedShotsFromOpponent.add(locationCoordinates);

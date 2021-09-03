@@ -1,6 +1,9 @@
 import Player from './Player';
 
 class ComputerPlayer extends Player {
+    constructor() {
+        super();
+    }
 
     generateRandomCoordinates() {
         const letters = ['A','B','C','D','E','F','G','H','I','J'];
@@ -17,6 +20,7 @@ class ComputerPlayer extends Player {
             this.shotsFiredByThisPlayer.add(coords);
         } else {
             this.attack(gameBoard);
+            // what's going on here?  infinite loop
         }
     }
 
