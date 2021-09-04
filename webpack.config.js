@@ -28,6 +28,10 @@ module.exports = {
                 test: /\.(png|svg|jpg|jpeg|gif)$/i,
                 type: 'asset/resource',
             },
+            {
+                test: /\.(ogg|flac|mp3|wav|mpe?g)$/i,
+                use: 'file-loader',
+            }
         ]
     }
 };
