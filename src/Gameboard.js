@@ -1,9 +1,10 @@
 import Ship from './Ship';
 
 class Gameboard {
-    constructor() {
+    constructor(player) {
         this.occupiedLocations = new Map();
         this.missedShotsFromOpponent = new Set();
+        this.player = player;
     
     }
 

@@ -1,12 +1,40 @@
+import domController from './DOMController';
 import Player from './Player';
 import ComputerPlayer from './ComputerPlayer';
 import Gameboard from './Gameboard';
 import Ship from './Ship';
-import DOMController from './DOMController';
 import './styles.css';
 
-const theDOMController = new DOMController();
-theDOMController.renderStartScreen();
+
+
+
+domController.renderStartScreen();
+
+const startBtn = document.querySelector('.start-button');
+const nameInput = document.querySelector('.name-input');
+startBtn.addEventListener('click', handleStartBtn);
+let playerName;
+function handleStartBtn() {
+    playerName = nameInput.value;
+    domController.renderGameScreen();
+    domController.renderGameboard(playerGameboard);
+    domController.renderGameboard(computerGameboard);
+}
+const player = new Player(playerName);
+const playerGameboard = new Gameboard('player');
+const computer = new ComputerPlayer();
+const computerGameboard = new Gameboard('computer');
+playerGameboard.createShipAndPlaceItOnBoard('Carrier', 'B1', 'C1', 'D1', 'E1', 'F1');
+playerGameboard.createShipAndPlaceItOnBoard('Battleship', 'C4', 'C5', 'C6', 'C7');
+playerGameboard.createShipAndPlaceItOnBoard('Cruiser', 'F8', 'F9', 'F10');
+playerGameboard.createShipAndPlaceItOnBoard('Submarine', 'F5', 'G5', 'H5');
+playerGameboard.createShipAndPlaceItOnBoard('Destroyer', 'H8', 'I8');
+
+computerGameboard.createShipAndPlaceItOnBoard('Carrier', 'J6', 'J7', 'J8', 'J9', 'J10');
+computerGameboard.createShipAndPlaceItOnBoard('Battleship', 'C4', 'D4', 'E4', 'F4');
+computerGameboard.createShipAndPlaceItOnBoard('Cruiser', 'C8', 'C9', 'C10');
+computerGameboard.createShipAndPlaceItOnBoard('Submarine', 'H2', 'H3', 'H4');
+computerGameboard.createShipAndPlaceItOnBoard('Destroyer', 'E1', 'F1');
 
 
 
