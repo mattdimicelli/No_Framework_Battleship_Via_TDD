@@ -14,7 +14,33 @@ class DOMController {
     constructor() {
         this.status = 'Awaiting orders, Rear Admiral';
         this.firstTurn = true;
+        this.introMusick = null;
+        this.sonarSound = null;
+        this.handleVolumeClick = this.handleVolumeClick.bind(this);
+
     }
+
+    handleVolumeClick(e) {
+        const volume = e.currentTarget;
+        if (volume.textContent === '🔊︁') {
+            volume.textContent = '︁︁🔇';
+            if (this.introMusick.currentTime > 0 && !this.introMusick.ended) {
+                this.introMusick.pause();
+            } else if (this.sonarSound.currentTime > 0 && !this.sonarSound.ended) {
+                this.sonarSound.pause();
+            }
+        } else if (volume.textContent === '︁︁🔇') {
+            volume.textContent = '🔊︁';
+            if(this.introMusick.paused && !this.introMusick.ended) {
+                this.introMusick.play();
+            } else if(this.sonarSound.paused) {
+                this.sonarSound.play();
+            } else {
+                this.introMusick.play();
+            }
+        }
+    }
+
     renderStartScreen() {
         const body = document.querySelector('body');
         const startScreen = document.createElement('div');
@@ -42,7 +68,7 @@ class DOMController {
         controlsContainer.classList.add('controls-container');
         nameForm.append(nameLabel, startButton);
         const volume = document.createElement('a');
-        volume.textContent = '︁🔇';
+        volume.textContent = '︁︁🔇';
         volume.classList.add('volume');
         volume.href = '#';
         controlsContainer.append(nameForm, volume);
@@ -52,37 +78,33 @@ class DOMController {
             titleContainer.classList.add('visible');
         }, 500);
         body.append(startScreen);
-        const introMusick = new Audio(introMusic);
-        const sonarSound = new Audio(sonar);
-        sonarSound.loop = true;
-        volume.addEventListener('click', () => {
-            if (volume.textContent === '🔊︁') {
-                volume.textContent = '🔇';
-                if (!introMusick.ended) {
-                    introMusick.pause();
-                } else {
-                    sonarSound.pause();
-                }
-            } else {
-                volume.textContent = '🔊︁';
-                introMusick.currentTime = 0;
-                introMusick.play();
-                introMusick.addEventListener('ended', () => sonarSound.play());
-            }
-        });
+        this.sonarSound = new Audio(sonar);
+        this.sonarSound.loop = true;
+        this.introMusick = new Audio(introMusic);
+        this.introMusick.addEventListener('ended', () => this.sonarSound.play());
+  
+        volume.addEventListener('click', domController.handleVolumeClick);
     }
+
     renderGameScreen(playerGameboard, computerGameboard, player, computer) {
+        const volumeIcon = (
+            (this.introMusick.currentTime > 0 && (!this.introMusick.paused && !this.introMusick.ended))
+            // || (this.introMusick.currentTime > 0 && !this.introMusick.ended)
+            || (this.sonarSound.currentTime > 0 && (!this.sonarSound.paused && !this.sonarSound.ended)) 
+            // || (this.sonarSound.currentTime > 0 && !this.sonarSound.ended)
+        ) ? '🔊︁' : '︁︁🔇';
         const capitalizedName = player.name.slice(0,1).toUpperCase() + player.name.slice(1);
         if (this.status === 'Awaiting orders, Rear Admiral') {
             this.status = `Awaiting orders, Rear Admiral ${capitalizedName}`;
         }
         const htmlBeforeComputerPlay = `
         <div class="main-container">
-            <header>
+            <header class="game-header">
                 <div class="game-title-container">
                     <h1 class="game-title">BATTLESHIP</h1>
                 </div>
                 <h2 class="status">${this.status}</h2>
+                <a href="#" class="volume">${volumeIcon}</a>
             </header>
             <div class="game-board-container">
                 <div class="board-and-label-container">
@@ -336,12 +358,17 @@ class DOMController {
             }
         }
 
+        const volumeATag = document.querySelector('.volume');
+        volumeATag.addEventListener('click', domController.handleVolumeClick);
+
         let resultOfComputersPlay;
         let shipType;
         if (!this.firstTurn) {
              const result = computer.attack(playerGameboard);
-             resultOfComputersPlay = result[0];
-             shipType = result[1];
+             if(Array.isArray(result)) {
+                resultOfComputersPlay = result[0];
+                shipType = result[1];
+             }
         }
 
         const computerMoveTimer = setTimeout(() => {
@@ -433,6 +460,7 @@ class DOMController {
         }
 
         function playHitSound() {
+            if (volumeATag.textContent === '︁︁🔇') return;
             const hitSoundUrls = [explosion1, explosion2, explosion3];
             const hitSoundUrl = _.sample(hitSoundUrls);
             const hitSound = new Audio(hitSoundUrl);
@@ -440,6 +468,7 @@ class DOMController {
         }
 
         function playShootSound() {
+            if (volumeATag.textContent === '︁︁🔇') return;
             const shootSoundUrls = [lighterBlastSound, missleLaunchSound, turretBlastSound, twoBlastsSound, railgunSound];
             const shootSoundUrl = _.sample(shootSoundUrls);
             const shootSound = new Audio(shootSoundUrl);
