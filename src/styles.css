@@ -111,7 +111,7 @@ body {
     opacity: 0;
 }
 
-.visible {
+.make-visible-and-white {
     opacity: 1;
     color: white;
 }
@@ -168,7 +168,7 @@ body {
     height: 100vh;
 }
 
-.occupied {
+.ship {
     background: darkgrey;
 }
 
@@ -212,7 +212,7 @@ body {
     color: white;
 }
 
-.dot {
+.invisible-dot {
     opacity: 0;
     color: white;
 }
