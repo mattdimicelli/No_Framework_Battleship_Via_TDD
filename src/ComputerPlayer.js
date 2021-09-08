@@ -18,7 +18,8 @@ class ComputerPlayer extends Player {
         if (!this.getCoordinatesHaveAlreadyBeenShotAtByThisPlayer(coords)) {
             const result = gameBoard.receiveAttack(coords);
             this.shotsFiredByThisPlayer.add(coords);
-            if (result === 'hit ship') return 'hit';
+            if (Array.isArray(result)) return result;
+            // if (resultOfAttack === 'hit ship') return 'hit';
         } else {
             this.attack(gameBoard);
             // what's going on here?  infinite loop

@@ -8,10 +8,7 @@ class Player {
         if (!this.getCoordinatesHaveAlreadyBeenShotAtByThisPlayer(coords)) {
             const result = gameBoard.receiveAttack(coords);
             this.shotsFiredByThisPlayer.add(coords);
-            if (Array.isArray(result) && result === 'hit ship') return 'hit';
-            if (Array.isArray(result) && result[0] === 'sunk ship') {
-                return result[1];
-            }
+            if (Array.isArray(result)) return result;
             if (result === 'missed shot') return 'attack missed';
         }
         if (this.getCoordinatesHaveAlreadyBeenShotAtByThisPlayer(coords)) {

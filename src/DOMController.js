@@ -337,8 +337,11 @@ class DOMController {
         }
 
         let resultOfComputersPlay;
+        let shipType;
         if (!this.firstTurn) {
-            resultOfComputersPlay = computer.attack(playerGameboard);
+             const result = computer.attack(playerGameboard);
+             resultOfComputersPlay = result[0];
+             shipType = result[1];
         }
 
         const computerMoveTimer = setTimeout(() => {
@@ -358,12 +361,14 @@ class DOMController {
 
 
 
-            if (resultOfComputersPlay === 'hit') {
+            if (resultOfComputersPlay === 'hit ship') {
                 console.log('player ship hit');
                 playHitSound();
-                domController.status = 'computer hit you!';
+                domController.status = 'THE ENEMY HIT YOUR ' + shipType.toUpperCase() + '!';
                 const status = document.querySelector('.status');
                 status.textContent = domController.status;
+            } else if (resultOfComputersPlay === 'sunk ship') {
+
             }     
     
         }, 2000);
@@ -375,22 +380,35 @@ class DOMController {
         function handleFire(e) {
             const coords = e.currentTarget.classList[2];
             const result = player.attack(coords, computerGameboard);
-            if (result === 'attack missed') {
-                const missStatuses = ['TARGET MISSED', 'TARGET MISSED, REAR ADMIRAL', 'ENEMY TARGET MISSED'];
-                const missStatus = _.sample(missStatuses);
-                domController.status = missStatus;
-                playShootSound();
-            } else if (result === 'hit') {
-                playShootSound();
-                const hitStatuses = ['DIRECT HIT!', 'TARGET HIT!', `TARGET HIT AT COORDINATE ${coords}!`, 'ENEMY TARGET HIT!', `ENEMY TARGET HIT AT COORDINATE ${coords}!`];
-                domController.status = _.sample(hitStatuses);
-            } else if(result === 'repeat shot') {
-                return;
-            } else {
-                playShootSound();
-                const enemySunkStatuses = [`ENEMY ${result} SUNK!`, `REAR ADMIRAL ${capitalizedName}, ENEMY ${result} DESTROYED!`, `ENEMY ${result} ELIMINATED!`];
-                domController.status = _.sample(enemySunkStatuses);
+            if (Array.isArray(result)) {
+                const shipName = result[1].toUpperCase();
+                if (result[0] === 'hit ship') {
+                    playShootSound();
+                    const hitStatuses = ['DIRECT HIT!', 'TARGET HIT!', `TARGET HIT AT COORDINATE ${coords}!`, 'ENEMY TARGET HIT!', `ENEMY TARGET HIT AT COORDINATE ${coords}!`];
+                    domController.status = _.sample(hitStatuses);
+                } else if (result[0] === 'sunk ship') {
+                    playShootSound();
+                    const enemySunkStatuses = [`ENEMY ${shipName} SUNK!`, `REAR ADMIRAL ${capitalizedName.toUpperCase()}, ENEMY ${shipName} DESTROYED!`, `ENEMY ${shipName} ELIMINATED!`];
+                    domController.status = _.sample(enemySunkStatuses);
+                }
+            } else if (result === 'attack missed') {
+                    const missStatuses = ['TARGET MISSED', 'TARGET MISSED, REAR ADMIRAL', 'ENEMY TARGET MISSED'];
+                    const missStatus = _.sample(missStatuses);
+                    domController.status = missStatus;
+                    playShootSound();
             }
+            // } else if (result === 'hit') {
+            //     playShootSound();
+            //     const hitStatuses = ['DIRECT HIT!', 'TARGET HIT!', `TARGET HIT AT COORDINATE ${coords}!`, 'ENEMY TARGET HIT!', `ENEMY TARGET HIT AT COORDINATE ${coords}!`];
+            //     domController.status = _.sample(hitStatuses);
+                else if(result === 'repeat shot') {
+                    return;
+                }
+            //     } else {
+            //     playShootSound();
+            //     const enemySunkStatuses = [`ENEMY ${result} SUNK!`, `REAR ADMIRAL ${capitalizedName}, ENEMY ${result} DESTROYED!`, `ENEMY ${result} ELIMINATED!`];
+            //     domController.status = _.sample(enemySunkStatuses);
+            // }
 
             domController.firstTurn = false;
 
