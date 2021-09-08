@@ -31,11 +31,15 @@ class Gameboard {
         for (let [ship , setOfLocations] of this.occupiedLocations.entries()) {
             if (setOfLocations.has(locationCoordinates)) {
                 ship.hit(locationCoordinates);
-                return;
+                if(ship.isSunk()) {
+                    return ['sunk ship', ship.shipType];
+                } else if (!ship.isSunk()) {
+                    return ['hit ship', ship.shipType];
+                }
             } 
         }
         this.missedShotsFromOpponent.add(locationCoordinates);
-
+        return 'missed shot';
     }
 
     getAllOfThisPlayersShipsAreSunk() {

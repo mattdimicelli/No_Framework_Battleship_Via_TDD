@@ -105,6 +105,7 @@ body {
 
 .visible {
     opacity: 1;
+    color: white;
 }
 
 .game-title {
@@ -151,7 +152,6 @@ body {
     justify-content: center;
     align-items: center;
     font-size: 2rem;
-    color: tranparent;
 }
 
 .main-container {
@@ -165,10 +165,11 @@ body {
 }
 
 .hit {
-    background: red;
+    color: red;
+    opacity: 1;
 }
 
-.cell:hover {
+.game-computer-board .cell:hover {
     background: green;
 }
 
@@ -200,6 +201,11 @@ body {
     background: darkblue;
     margin: 0;
     text-align: center;
+    color: white;
+}
+
+.dot {
+    opacity: 0;
     color: white;
 }
 
