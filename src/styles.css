@@ -66,7 +66,8 @@ body {
 	/* border: 2px solid black; */
     font-weight: bold;
 }
-.start-button:active {
+.start-button:active,
+.play-again:active {
 	position:relative;
 	top:1px;
 }
@@ -177,6 +178,11 @@ body {
     justify-content: center;
     align-items: center;
     font-size: 2rem;
+}
+
+.play-again {
+    color: red;
+
 }
 
 .main-container {

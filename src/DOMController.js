@@ -34,6 +34,84 @@ class DOMController {
         this.whereToPlaceCurrentShip = null;
     }
 
+    randomlyGenerateEnemyShipPlacements() {
+        const letterNumberHash = {
+            'A': 1,
+            'B': 2,
+            'C': 3,
+            'D': 4,
+            'E': 5,
+            'F': 6,
+            'G': 7,
+            'H': 8,
+            'I': 9,
+            'J': 10
+        };
+        let remainingGridCoordinates = [];
+        
+        for (let i = 1; i <= 10; i++) {
+            for (let letter of Object.keys(letterNumberHash)) {
+                remainingGridCoordinates.push(letter + i);
+            }
+        }
+        const shipLocations = {
+            carrier: [],
+            battleship: [],
+            cruiser: [],
+            submarine: [],
+            destroyer: [],
+        };
+        // any ship length
+        //horizontal
+        //select first random coord
+        function placeHorizontallyOrVertically() {
+
+        }
+        function placeShipHorizontally(shipLength) {
+            const randomLetter = _.sample(Object.keys(letterNumberHash));
+            const randomNumber = _.sample(Object.values(letterNumberHash));
+            if (!remainingGridCoordinates.includes(randomLetter + randomNumber)) {
+                placeHorizontallyOrVertically();
+            } else {
+                if (randomNumber + (shipLength - 1) > 10) {
+                    placeHorizontallyOrVertically();
+                } else {
+                    const coordsAlreadyOccupied = [];
+                    const coordsForShip = [];
+                    for (let i = 1; i < shipLength; i++) {
+                        const newNumber = randomNumber + i;
+                        const newCoord = randomLetter + newNumber;
+                        if (!remainingGridCoordinates.includes(newCoord)) {
+                            coordsAlreadyOccupied.push(newCoord);
+                        }
+                        coordsForShip.push(newCoord);
+                    }
+                    if (coordsAlreadyOccupied.length > 0) {
+                        placeHorizontallyOrVertically();
+                    } else {
+                        return coordsForShip;
+                    }
+                }
+            }
+        }
+
+        
+
+        
+
+
+
+        for (let i = 0; i < 5; i++) {
+            shipLocations.carrier.push(selectCoordAtRandom());
+        }
+        function selectCoordAtRandom() {
+            const randomCoord = _.sample(remainingGridCoordinates);
+            remainingGridCoordinates = remainingGridCoordinates.filter(coord => coord !== randomCoord);
+            return randomCoord;
+        }
+
+    }
+
     handleVolumeIconClick(e) {
         const volumeAEl = e.currentTarget;
         if (volumeAEl.textContent === '🔊︁') { // when this icon displayed, sound should be playing
@@ -70,20 +148,27 @@ class DOMController {
         } 
     }
 
-    ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard, playerNameUppercase) {
+    ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard) {
         let winner;
+        if (playerGameboard.getAllOfThisPlayersShipsAreSunk() 
+        && computerGameboard.getAllOfThisPlayersShipsAreSunk()) {
+            winner = 'DRAW';
+        }
         if (playerGameboard.getAllOfThisPlayersShipsAreSunk()) {
             winner = 'ENEMY';
         }
         if (computerGameboard.getAllOfThisPlayersShipsAreSunk()) {
-            winner = playerNameUppercase;
+            winner = 'PLAYER';
         }
         if (winner) {
             if(winner === 'ENEMY') {
                 this.status = 'GAME OVER. THE ENEMY HAS SUNK YOUR FLEET!';
-            }
-            else {
-                this.status = `YOU HAVE SUNK THE ENEMY FLEET, REAR ADMIRAL ${winner}! GAME OVER! <a class="play-again" href="#">PLAY AGAIN?</a>`;
+            } else if (winner === 'DRAW') {
+                // eslint-disable-next-line quotes
+                this.status = "BOTH FLEETS HAVE BEEN SUNK!  IT'S A DRAW!";
+            } else if (winner === 'PLAYER') {
+                // eslint-disable-next-line quotes
+                this.status = `YOU HAVE SUNK THE ENEMY FLEET! GAME OVER! <a class="play-again" href="#">PLAY AGAIN?</a>`;
                 const playAgainLink = document.querySelector('.play-again');
                 // playAgainLink.onClick = playAgain();
             }
@@ -240,6 +325,7 @@ class DOMController {
             } else {domController.axis = 'VERTICAL';}
             btn.textContent = domController.axis;
         }
+
         function handleClick() {
             /*If the player clicks on a spot where the ship can't be placed,
             don't do anything*/
@@ -281,6 +367,7 @@ class DOMController {
                     const shipNameFirstLetterCapitalised = shipName.slice(0,1).toUpperCase() + shipName.slice(1);
                     playerGameboard.createShipAndPlaceItOnBoard(shipNameFirstLetterCapitalised, ...arrOfCoords);
                 }
+                const computerCoords = domController.randomlyGenerateEnemyShipPlacements();
                 computerGameboard.createShipAndPlaceItOnBoard('Carrier', 'J6', 'J7', 'J8', 'J9', 'J10');
                 computerGameboard.createShipAndPlaceItOnBoard('Battleship', 'C4', 'D4', 'E4', 'F4');
                 computerGameboard.createShipAndPlaceItOnBoard('Cruiser', 'C8', 'C9', 'C10');
@@ -767,6 +854,10 @@ class DOMController {
                 const status = document.querySelector('.status');
                 status.textContent = domController.status;
             }     
+
+            // every time the player makes a move, check if somebody won the game
+            domController.ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard); 
+            
         }, 2000);
 
     
@@ -798,9 +889,6 @@ class DOMController {
                 shouldn't do anything */
                 return;
             }
-
-            // every time the player makes a move, check if somebody won the game
-            domController.ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard, playerNameUppercase); 
 
             domController.renderGameScreen(playerGameboard, computerGameboard, player, computer);
         }
