@@ -128,6 +128,13 @@ body {
 .volume {
     font-size: 4rem;
     color: white;
+    text-decoration: none;
+}
+
+.set-ships-screen-volume {
+    font-size: 3rem;
+    color: white;
+    text-decoration: none;
 }
 
 .controls-container {
@@ -143,6 +150,16 @@ body {
     grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     flex: auto;
     cursor: crosshair;
+}
+
+.set-ships-board {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    flex: auto;
+    cursor: pointer;
+    padding: 0 25% 4rem 25%;
+    background: darkblue;
 }
 
 .game-board-container {
@@ -215,6 +232,16 @@ body {
 .invisible-dot {
     opacity: 0;
     color: white;
+}
+
+.change-axis {
+    background: white;
+    color: darkblue;
+    font-size: 1.5rem;
+    text-decoration: none;
+    padding: 0.6rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
 }
 
 

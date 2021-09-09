@@ -15,24 +15,48 @@ startBtn.addEventListener('click', handleStartBtn);
 
 
 function handleStartBtn() {
-    const playerName = nameInput.value;
-    const player = new Player(playerName);
-    const playerGameboard = new Gameboard('player');
-    const computer = new ComputerPlayer();
-    const computerGameboard = new Gameboard('computer');
-    playerGameboard.createShipAndPlaceItOnBoard('Carrier', 'B1', 'C1', 'D1', 'E1', 'F1');
-    playerGameboard.createShipAndPlaceItOnBoard('Battleship', 'C4', 'C5', 'C6', 'C7');
-    playerGameboard.createShipAndPlaceItOnBoard('Cruiser', 'F8', 'F9', 'F10');
-    playerGameboard.createShipAndPlaceItOnBoard('Submarine', 'F5', 'G5', 'H5');
-    playerGameboard.createShipAndPlaceItOnBoard('Destroyer', 'H8', 'I8');
+    domController.renderPlaceShipsScreen({name: 'Matt'});
+    // const playerName = nameInput.value;
+    // const player = new Player(playerName);
+    // const playerGameboard = new Gameboard('player');
+    // const computer = new ComputerPlayer();
+    // const computerGameboard = new Gameboard('computer');
+    // playerGameboard.createShipAndPlaceItOnBoard('Carrier', 'B1', 'C1', 'D1', 'E1', 'F1');
+    // playerGameboard.createShipAndPlaceItOnBoard('Battleship', 'C4', 'C5', 'C6', 'C7');
+    // playerGameboard.createShipAndPlaceItOnBoard('Cruiser', 'F8', 'F9', 'F10');
+    // playerGameboard.createShipAndPlaceItOnBoard('Submarine', 'F5', 'G5', 'H5');
+    // playerGameboard.createShipAndPlaceItOnBoard('Destroyer', 'H8', 'I8');
 
-    computerGameboard.createShipAndPlaceItOnBoard('Carrier', 'J6', 'J7', 'J8', 'J9', 'J10');
-    computerGameboard.createShipAndPlaceItOnBoard('Battleship', 'C4', 'D4', 'E4', 'F4');
-    computerGameboard.createShipAndPlaceItOnBoard('Cruiser', 'C8', 'C9', 'C10');
-    computerGameboard.createShipAndPlaceItOnBoard('Submarine', 'H2', 'H3', 'H4');
-    computerGameboard.createShipAndPlaceItOnBoard('Destroyer', 'E1', 'F1');
-    domController.renderGameScreen(playerGameboard, computerGameboard, player, computer);
+    // computerGameboard.createShipAndPlaceItOnBoard('Carrier', 'J6', 'J7', 'J8', 'J9', 'J10');
+    // computerGameboard.createShipAndPlaceItOnBoard('Battleship', 'C4', 'D4', 'E4', 'F4');
+    // computerGameboard.createShipAndPlaceItOnBoard('Cruiser', 'C8', 'C9', 'C10');
+    // computerGameboard.createShipAndPlaceItOnBoard('Submarine', 'H2', 'H3', 'H4');
+    // computerGameboard.createShipAndPlaceItOnBoard('Destroyer', 'E1', 'F1');
+
+    // domController.renderGameScreen(playerGameboard, computerGameboard, player, computer);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -13,12 +13,22 @@ import explosion3 from './audio/explosion3.mp3';
 
 class DOMController {
     constructor() {
-        this.status = 'Awaiting orders, Rear Admiral';
+        this.status = null;
         this.firstTurn = true;
         this.introMusick = null;
         this.sonarSound = null;
         this.handleVolumeIconClick = this.handleVolumeIconClick.bind(this);
         this.ifThereIsAWinnerAnnounceIt = this.ifThereIsAWinnerAnnounceIt.bind(this);
+        this.shipLocations = {
+            carrier: null,
+            battleship: null,
+            cruiser: null,
+            submarine: null,
+            destroyer: null,
+        };
+        this.currentShip = null;
+        this.axis = 'vertical';
+        this.whereToPlaceCurrentShip = null;
     }
 
     handleVolumeIconClick(e) {
@@ -42,13 +52,28 @@ class DOMController {
         }
     }
 
-    ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard, playerNameFirstLetterCapitalized) {
+    selectShipToPlace() {
+        const ships = this.shipLocations;
+        if (ships.carrier === null) {
+            this.currentShip = 'carrier';
+        } else if (ships.battleship === null) {
+            this.currentShip = 'battleship';
+        } else if (ships.cruiser === null) {
+            this.currentShip = 'cruiser';
+        } else if (ships.submarine === null) {
+            this.currentShip = 'submarine';
+        } else if (ships.destroyer === null) {
+            this.currentShip = 'destroyer';
+        } 
+    }
+
+    ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard, playerNameUppercase) {
         let winner;
         if (playerGameboard.getAllOfThisPlayersShipsAreSunk()) {
             winner = 'ENEMY';
         }
         if (computerGameboard.getAllOfThisPlayersShipsAreSunk()) {
-            winner = playerNameFirstLetterCapitalized.toUpperCase();
+            winner = playerNameUppercase;
         }
         if (winner) {
             if(winner === 'ENEMY') {
@@ -60,6 +85,242 @@ class DOMController {
                 // playAgainLink.onClick = playAgain();
             }
         }
+    }
+
+    renderPlaceShipsScreen(player) {
+        this.selectShipToPlace();
+        /*on the first render of the gameScreen, sets the volumeIcon based on 
+        whether or not the player had the music playing when the START button was
+        clicked*/ 
+        const volumeIcon = (
+            (this.introMusick.currentTime > 0 && (!this.introMusick.paused && !this.introMusick.ended))
+            || (this.sonarSound.currentTime > 0 && (!this.sonarSound.paused && !this.sonarSound.ended)) 
+        ) ? '🔊︁' : '︁︁🔇';
+
+        const playerNameUppercase = player.name.toUpperCase();
+        
+        const capitalizedShipName = this.currentShip.toUpperCase();
+        this.status = `REAR ADMIRAL ${playerNameUppercase}, PLACE YOUR ${capitalizedShipName}`;
+        
+
+        const html = `
+        <div class="main-container">
+            <header class="game-header">
+                <div class="game-title-container">
+                    <h1 class="game-title">BATTLESHIP</h1>
+                </div>
+                <h2 class="status">${this.status}</h2>
+                <a href="#" class="set-ships-screen-volume">${volumeIcon}</a>
+                <a href="#" class="change-axis">HORIZONTAL</a>
+            </header>
+            <div class="set-ships-board">
+                <div class="cell player A1"></div>
+                <div class="cell player A2"></div>
+                <div class="cell player A3"></div>
+                <div class="cell player A4"></div>
+                <div class="cell player A5"></div>
+                <div class="cell player A6"></div>
+                <div class="cell player A7"></div>
+                <div class="cell player A8"></div>
+                <div class="cell player A9"></div>
+                <div class="cell player A10"></div>
+                <div class="cell player B1"></div>
+                <div class="cell player B2"></div>
+                <div class="cell player B3"></div>
+                <div class="cell player B4"></div>
+                <div class="cell player B5"></div>
+                <div class="cell player B6"></div>
+                <div class="cell player B7"></div>
+                <div class="cell player B8"></div>
+                <div class="cell player B9"></div>
+                <div class="cell player B10"></div>
+                <div class="cell player C1"></div>
+                <div class="cell player C2"></div>
+                <div class="cell player C3"></div>
+                <div class="cell player C4"></div>
+                <div class="cell player C5"></div>
+                <div class="cell player C6"></div>
+                <div class="cell player C7"></div>
+                <div class="cell player C8"></div>
+                <div class="cell player C9"></div>
+                <div class="cell player C10"></div>
+                <div class="cell player D1"></div>
+                <div class="cell player D2"></div>
+                <div class="cell player D3"></div>
+                <div class="cell player D4"></div>
+                <div class="cell player D5"></div>
+                <div class="cell player D6"></div>
+                <div class="cell player D7"></div>
+                <div class="cell player D8"></div>
+                <div class="cell player D9"></div>
+                <div class="cell player D10"></div>  
+                <div class="cell player E1"></div>
+                <div class="cell player E2"></div>
+                <div class="cell player E3"></div>
+                <div class="cell player E4"></div>
+                <div class="cell player E5"></div>
+                <div class="cell player E6"></div>
+                <div class="cell player E7"></div>
+                <div class="cell player E8"></div>
+                <div class="cell player E9"></div>
+                <div class="cell player E10"></div>
+                <div class="cell player F1"></div>
+                <div class="cell player F2"></div>
+                <div class="cell player F3"></div>
+                <div class="cell player F4"></div>
+                <div class="cell player F5"></div>
+                <div class="cell player F6"></div>
+                <div class="cell player F7"></div>
+                <div class="cell player F8"></div>
+                <div class="cell player F9"></div>
+                <div class="cell player F10"></div>
+                <div class="cell player G1"></div>
+                <div class="cell player G2"></div>
+                <div class="cell player G3"></div>
+                <div class="cell player G4"></div>
+                <div class="cell player G5"></div>
+                <div class="cell player G6"></div>
+                <div class="cell player G7"></div>
+                <div class="cell player G8"></div>
+                <div class="cell player G9"></div>
+                <div class="cell player G10"></div>
+                <div class="cell player H1"></div>
+                <div class="cell player H2"></div>
+                <div class="cell player H3"></div>
+                <div class="cell player H4"></div>
+                <div class="cell player H5"></div>
+                <div class="cell player H6"></div>
+                <div class="cell player H7"></div>
+                <div class="cell player H8"></div>
+                <div class="cell player H9"></div>
+                <div class="cell player H10"></div>
+                <div class="cell player I1"></div>
+                <div class="cell player I2"></div>
+                <div class="cell player I3"></div>
+                <div class="cell player I4"></div>
+                <div class="cell player I5"></div>
+                <div class="cell player I6"></div>
+                <div class="cell player I7"></div>
+                <div class="cell player I8"></div>
+                <div class="cell player I9"></div>
+                <div class="cell player I10"></div>
+                <div class="cell player J1"></div>
+                <div class="cell player J2"></div>
+                <div class="cell player J3"></div>
+                <div class="cell player J4"></div>
+                <div class="cell player J5"></div>
+                <div class="cell player J6"></div>
+                <div class="cell player J7"></div>
+                <div class="cell player J8"></div>
+                <div class="cell player J9"></div>
+                <div class="cell player J10"></div>
+            </div>
+        </div>
+        `;
+
+        const body = document.querySelector('body');
+        body.innerHTML = '';
+        body.insertAdjacentHTML('afterbegin', html);     
+
+        const volumeATag = document.querySelector('.set-ships-screen-volume');
+        volumeATag.addEventListener('click', domController.handleVolumeIconClick);
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach(cell => cell.addEventListener('mouseover', handleMouseOver));
+        cells.forEach(cell => cell.addEventListener('click', handleClick));
+        function handleClick() {
+            /*If the player clicks on a spot where the ship can't be placed,
+            don't do anything*/
+            if (domController.whereToPlaceCurrentShip === null) {
+                console.log('does nothing');
+                return;
+            }
+            const shipName = domController.currentShip;
+            domController.shipLocations[shipName] = domController.whereToPlaceCurrentShip;
+            console.log(domController.shipLocations);
+            if (domController.currentShip === 'destroyer') {
+                console.log('need to load game screen here');
+            }
+            domController.selectShipToPlace();
+        }
+        function handleMouseOver(e) {
+            /* must clear the following property with every mouseOver event
+            on a cell because if an illegible cell (eg. due to ship size) is mousedOver, this property
+            will not update, and then when the user clicks to place a ship
+            there will be issues */
+            domController.whereToPlaceCurrentShip = null;
+            let length;
+            const ship = domController.currentShip;
+            if (ship === 'carrier') {
+                length = 5;
+            } else if (ship === 'battleship') {
+                length = 4;
+            } else if (ship === 'cruiser' || ship === 'submarine') {
+                length = 3;
+            } else if (ship === 'destroyer') {
+                length = 2;
+            }
+            const mousePointerCoord = e.currentTarget.classList[2];
+            const coordLetter = mousePointerCoord.slice(0,1);
+            const coordNumber = Number(mousePointerCoord.slice(1));
+
+            if (domController.axis === 'horizontal') {
+                const digitOfCoordsWhereShipMightBePlaced = [];
+                for (let i=0; i < length; i++) {
+                    const nextCellNum = coordNumber + i;
+                    /* if placing a ship where the mouse currently is
+                    would lead to the ship going off the board, do nothing,
+                    because this will obviously not work */
+                    if (nextCellNum > 10) return;
+                    digitOfCoordsWhereShipMightBePlaced.push(nextCellNum);
+                }
+                domController.whereToPlaceCurrentShip = digitOfCoordsWhereShipMightBePlaced.map(number => coordLetter + number);
+            }
+
+            if (domController.axis === 'vertical') {
+                const letterNumberHash = {
+                    'A': 1,
+                    'B': 2,
+                    'C': 3,
+                    'D': 4,
+                    'E': 5,
+                    'F': 6,
+                    'G': 7,
+                    'H': 8,
+                    'I': 9,
+                    'J': 10,
+                };
+                const numberLetterHash = {
+                    1: 'A',
+                    2: 'B',
+                    3: 'C',
+                    4: 'D',
+                    5: 'E',
+                    6: 'F',
+                    7: 'G',
+                    8: 'H',
+                    9: 'I',
+                    10: 'J',
+                };
+                const letterCodified = letterNumberHash[coordLetter];
+                const letterOfCoordsWhereShipMightBePlaced = [];
+                for (let i=0; i < length; i++) {
+                    let nextCellLetterCodified = letterCodified + i;
+                    /* if placing a ship where the mouse currently is
+                    would lead to the ship going off the board, do nothing,
+                    because this will obviously not work */
+                    if (nextCellLetterCodified > 10) return;
+                    nextCellLetterCodified = String(nextCellLetterCodified);
+                    const nextCellLetter = numberLetterHash[nextCellLetterCodified];
+                    letterOfCoordsWhereShipMightBePlaced.push(nextCellLetter);
+                }
+                domController.whereToPlaceCurrentShip = letterOfCoordsWhereShipMightBePlaced.map(letter => letter + coordNumber);
+            }
+
+
+           
+            
+        }
+        
     }
 
     renderStartScreen() {
@@ -116,11 +377,11 @@ class DOMController {
             || (this.sonarSound.currentTime > 0 && (!this.sonarSound.paused && !this.sonarSound.ended)) 
         ) ? '🔊︁' : '︁︁🔇';
 
-        const playerNameFirstLetterCapitalized = player.name.slice(0,1).toUpperCase() + player.name.slice(1);
+        const playerNameUppercase = player.name.toUpperCase();
 
         // programs the initial status to include the player's name
-        if (this.status === 'Awaiting orders, Rear Admiral') {
-            this.status = `Awaiting orders, Rear Admiral ${playerNameFirstLetterCapitalized}`;
+        if (this.status === 'AWAITING ORDERS, REAR ADMIRAL') {
+            this.status = `AWAITING ORDERS, REAR ADMIRAL ${playerNameUppercase}`;
         }
 
         const html = `
@@ -458,7 +719,7 @@ class DOMController {
                     domController.status = _.sample(hitStatuses);
                 } else if (resultOfAttackOnEnemy[0] === 'sunk ship') {
                     playSounds('shootSounds');
-                    const enemySunkStatuses = [`ENEMY ${shipName} SUNK!`, `REAR ADMIRAL ${playerNameFirstLetterCapitalized.toUpperCase()}, ENEMY ${shipName} DESTROYED!`, `ENEMY ${shipName} ELIMINATED!`];
+                    const enemySunkStatuses = [`ENEMY ${shipName} SUNK!`, `REAR ADMIRAL ${playerNameUppercase}, ENEMY ${shipName} DESTROYED!`, `ENEMY ${shipName} ELIMINATED!`];
                     domController.status = _.sample(enemySunkStatuses);
                 }
             } else if (resultOfAttackOnEnemy === 'attack missed') {
@@ -473,7 +734,7 @@ class DOMController {
             }
 
             // every time the player makes a move, check if somebody won the game
-            domController.ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard, playerNameFirstLetterCapitalized); 
+            domController.ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard, playerNameUppercase); 
 
             domController.renderGameScreen(playerGameboard, computerGameboard, player, computer);
         }
