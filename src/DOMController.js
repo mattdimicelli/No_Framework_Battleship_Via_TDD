@@ -9,6 +9,9 @@ import sonar from './audio/submarine-sonar-ping.wav';
 import explosion1 from './audio/explosion1.mp3';
 import explosion2 from './audio/explosion2.mp3';
 import explosion3 from './audio/explosion3.mp3';
+import Player from './Player';
+import Gameboard from './Gameboard';
+import ComputerPlayer from './ComputerPlayer';
 
 
 class DOMController {
@@ -27,7 +30,7 @@ class DOMController {
             destroyer: null,
         };
         this.currentShip = null;
-        this.axis = 'vertical';
+        this.axis = 'VERTICAL';
         this.whereToPlaceCurrentShip = null;
     }
 
@@ -111,7 +114,7 @@ class DOMController {
                 </div>
                 <h2 class="status">${this.status}</h2>
                 <a href="#" class="set-ships-screen-volume">${volumeIcon}</a>
-                <a href="#" class="change-axis">HORIZONTAL</a>
+                <a href="#" class="change-axis">${this.axis}</a>
             </header>
             <div class="set-ships-board">
                 <div class="cell player A1"></div>
@@ -224,9 +227,19 @@ class DOMController {
 
         const volumeATag = document.querySelector('.set-ships-screen-volume');
         volumeATag.addEventListener('click', domController.handleVolumeIconClick);
+        const changeAxisBtn = document.querySelector('.change-axis');
+        changeAxisBtn.addEventListener('click', handleChangeAxis);
         const cells = document.querySelectorAll('.cell');
         cells.forEach(cell => cell.addEventListener('mouseover', handleMouseOver));
         cells.forEach(cell => cell.addEventListener('click', handleClick));
+
+        function handleChangeAxis(e) {
+            const btn = e.currentTarget;
+            if (domController.axis === 'VERTICAL') {
+                domController.axis = 'HORIZONTAL';
+            } else {domController.axis = 'VERTICAL';}
+            btn.textContent = domController.axis;
+        }
         function handleClick() {
             /*If the player clicks on a spot where the ship can't be placed,
             don't do anything*/
@@ -234,20 +247,64 @@ class DOMController {
                 console.log('does nothing');
                 return;
             }
-            const shipName = domController.currentShip;
-            domController.shipLocations[shipName] = domController.whereToPlaceCurrentShip;
-            console.log(domController.shipLocations);
-            if (domController.currentShip === 'destroyer') {
-                console.log('need to load game screen here');
+
+            /* If a cell is already occupied by another ship, clicking should do
+            nothing */
+            for (const coord of domController.whereToPlaceCurrentShip) {
+                for (const arrOfCoordsOfAlreadyPlacedShip of Object.values(domController.shipLocations)) {
+                    if (arrOfCoordsOfAlreadyPlacedShip) {
+                        if (arrOfCoordsOfAlreadyPlacedShip.includes(coord)) {
+                            return;
+                        }
+                    }
+                }
             }
+
+            /*This code places("permamently") the ship on the visual board*/
+            for (const coord of domController.whereToPlaceCurrentShip) {
+                const cell = document.querySelector(`.cell.player.${coord}`);
+                cell.classList.add('ship-permanent');
+            }
+
+            const lowercaseShipName = domController.currentShip;
+            domController.shipLocations[lowercaseShipName] = domController.whereToPlaceCurrentShip;
+            console.log(domController.shipLocations);
+
+            /* The following commands load the actual game after the last ship 
+            (the destroyer) is placed */
+            if (domController.currentShip === 'destroyer') {
+                const thePlayer = new Player(player.name);
+                const playerGameboard = new Gameboard('player');
+                const computer = new ComputerPlayer();
+                const computerGameboard = new Gameboard('computer');
+                for (const [shipName, arrOfCoords] of Object.entries(domController.shipLocations)) {
+                    const shipNameFirstLetterCapitalised = shipName.slice(0,1).toUpperCase() + shipName.slice(1);
+                    playerGameboard.createShipAndPlaceItOnBoard(shipNameFirstLetterCapitalised, ...arrOfCoords);
+                }
+                computerGameboard.createShipAndPlaceItOnBoard('Carrier', 'J6', 'J7', 'J8', 'J9', 'J10');
+                computerGameboard.createShipAndPlaceItOnBoard('Battleship', 'C4', 'D4', 'E4', 'F4');
+                computerGameboard.createShipAndPlaceItOnBoard('Cruiser', 'C8', 'C9', 'C10');
+                computerGameboard.createShipAndPlaceItOnBoard('Submarine', 'H2', 'H3', 'H4');
+                computerGameboard.createShipAndPlaceItOnBoard('Destroyer', 'E1', 'F1');
+                domController.renderGameScreen(playerGameboard, computerGameboard, thePlayer, computer);
+            }
+
             domController.selectShipToPlace();
+            const uppercaseShipName = domController.currentShip.toUpperCase();
+            const status = document.querySelector('.status');
+            status.textContent = `REAR ADMIRAL ${playerNameUppercase}, PLACE YOUR ${uppercaseShipName}`;
         }
         function handleMouseOver(e) {
+
+            // clear the "ship shadow" on the grid from the previous mouseOver
+            cells.forEach(cell => cell.classList.remove('ship'));
+
             /* must clear the following property with every mouseOver event
             on a cell because if an illegible cell (eg. due to ship size) is mousedOver, this property
             will not update, and then when the user clicks to place a ship
             there will be issues */
             domController.whereToPlaceCurrentShip = null;
+
             let length;
             const ship = domController.currentShip;
             if (ship === 'carrier') {
@@ -263,7 +320,7 @@ class DOMController {
             const coordLetter = mousePointerCoord.slice(0,1);
             const coordNumber = Number(mousePointerCoord.slice(1));
 
-            if (domController.axis === 'horizontal') {
+            if (domController.axis === 'HORIZONTAL') {
                 const digitOfCoordsWhereShipMightBePlaced = [];
                 for (let i=0; i < length; i++) {
                     const nextCellNum = coordNumber + i;
@@ -276,7 +333,7 @@ class DOMController {
                 domController.whereToPlaceCurrentShip = digitOfCoordsWhereShipMightBePlaced.map(number => coordLetter + number);
             }
 
-            if (domController.axis === 'vertical') {
+            if (domController.axis === 'VERTICAL') {
                 const letterNumberHash = {
                     'A': 1,
                     'B': 2,
@@ -316,11 +373,13 @@ class DOMController {
                 domController.whereToPlaceCurrentShip = letterOfCoordsWhereShipMightBePlaced.map(letter => letter + coordNumber);
             }
 
-
-           
-            
+            if (domController.whereToPlaceCurrentShip) {
+                for (const coord of domController.whereToPlaceCurrentShip) {
+                    const cell = document.querySelector(`.cell.player.${coord}`);
+                    cell.classList.add('ship');
+                }
+            }            
         }
-        
     }
 
     renderStartScreen() {
@@ -366,6 +425,13 @@ class DOMController {
         this.introMusick.addEventListener('ended', () => this.sonarSound.play());
   
         volume.addEventListener('click', domController.handleVolumeIconClick);
+        startButton.addEventListener('click', handleStartBtn);
+        function handleStartBtn() {
+            const nameInput = document.querySelector('.name-input');
+            const playerName = nameInput.value;
+            const player = { name: playerName };
+            domController.renderPlaceShipsScreen(player);
+        }
     }
 
     renderGameScreen(playerGameboard, computerGameboard, player, computer) {

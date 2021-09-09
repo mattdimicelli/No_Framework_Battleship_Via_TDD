@@ -1,21 +1,18 @@
 import domController from './DOMController';
-import Player from './Player';
-import ComputerPlayer from './ComputerPlayer';
-import Gameboard from './Gameboard';
-import Ship from './Ship';
 import './styles.css';
 
 
 
 
 domController.renderStartScreen();
-const startBtn = document.querySelector('.start-button');
-const nameInput = document.querySelector('.name-input');
-startBtn.addEventListener('click', handleStartBtn);
+// const startBtn = document.querySelector('.start-button');
+// const nameInput = document.querySelector('.name-input');
+// startBtn.addEventListener('click', handleStartBtn);
 
 
-function handleStartBtn() {
-    domController.renderPlaceShipsScreen({name: 'Matt'});
+// function handleStartBtn() {
+//     domController.renderStartScreen();
+    // domController.renderPlaceShipsScreen({name: 'Matt'});
     // const playerName = nameInput.value;
     // const player = new Player(playerName);
     // const playerGameboard = new Gameboard('player');
@@ -34,7 +31,7 @@ function handleStartBtn() {
     // computerGameboard.createShipAndPlaceItOnBoard('Destroyer', 'E1', 'F1');
 
     // domController.renderGameScreen(playerGameboard, computerGameboard, player, computer);
-}
+
 
 
 
