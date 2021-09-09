@@ -34,6 +34,40 @@ class DOMController {
         this.whereToPlaceCurrentShip = null;
     }
 
+    restartGame(player) {
+        domController.status = null;
+        domController.firstTurn = true;
+        domController.shipLocations = {
+            carrier: null,
+            battleship: null,
+            cruiser: null,
+            submarine: null,
+            destroyer: null,
+        };
+        domController.currentShip = null;
+        domController.axis = 'VERTICAL';
+        domController.whereToPlaceCurrentShip = null;
+        domController.renderPlaceShipsScreen(player);
+    }
+
+    playGame(player) {
+        console.log('play new game fired');
+        const thePlayer = new Player(player.name);
+        const playerGameboard = new Gameboard('player');
+        const computer = new ComputerPlayer();
+        const computerGameboard = new Gameboard('computer');
+        for (const [shipName, arrOfCoords] of Object.entries(domController.shipLocations)) {
+            const shipNameFirstLetterCapitalised = shipName.slice(0,1).toUpperCase() + shipName.slice(1);
+            playerGameboard.createShipAndPlaceItOnBoard(shipNameFirstLetterCapitalised, ...arrOfCoords);
+        }
+        const computerCoords = domController.randomlyGenerateEnemyShipPlacements();
+        for (const [shipName, arrOfCoords] of Object.entries(computerCoords)) {
+            const shipNameFirstLetterCapitalised = shipName.slice(0,1).toUpperCase() + shipName.slice(1);
+            computerGameboard.createShipAndPlaceItOnBoard(shipNameFirstLetterCapitalised, ...arrOfCoords);
+        }
+        domController.renderGameScreen(playerGameboard, computerGameboard, thePlayer, computer);
+    }
+
     randomlyGenerateEnemyShipPlacements() {
         const letterNumberHash = {
             'A': 1,
@@ -47,6 +81,19 @@ class DOMController {
             'I': 9,
             'J': 10
         };
+        const numberLetterHash = {
+            1: 'A',
+            2: 'B',
+            3: 'C',
+            4: 'D',
+            5: 'E',
+            6: 'F',
+            7: 'G',
+            8: 'H',
+            9: 'I',
+            10: 'J',
+        };
+        
         let remainingGridCoordinates = [];
         
         for (let i = 1; i <= 10; i++) {
@@ -54,30 +101,42 @@ class DOMController {
                 remainingGridCoordinates.push(letter + i);
             }
         }
-        const shipLocations = {
-            carrier: [],
-            battleship: [],
-            cruiser: [],
-            submarine: [],
-            destroyer: [],
-        };
-        // any ship length
-        //horizontal
-        //select first random coord
-        function placeHorizontallyOrVertically() {
 
+        const shipLocations = {
+            carrier: placeHorizontallyOrVertically(5),
+            battleship: placeHorizontallyOrVertically(4),
+            cruiser: placeHorizontallyOrVertically(3),
+            submarine: placeHorizontallyOrVertically(3),
+            destroyer: placeHorizontallyOrVertically(2),
+        };
+        console.log(shipLocations);
+        return shipLocations;
+    
+        function placeHorizontallyOrVertically(shipLength) {
+            let coords = null;
+            while (coords === null) {
+                if (Math.random() >= 0.5) {
+                    coords = placeShipHorizontally(shipLength);
+                } else {
+                    coords = placeShipVertically(shipLength);
+                }
+            }
+            return coords;
         }
+
         function placeShipHorizontally(shipLength) {
             const randomLetter = _.sample(Object.keys(letterNumberHash));
             const randomNumber = _.sample(Object.values(letterNumberHash));
-            if (!remainingGridCoordinates.includes(randomLetter + randomNumber)) {
-                placeHorizontallyOrVertically();
+            const randomCoord = randomLetter + randomNumber;
+            if (!remainingGridCoordinates.includes(randomCoord)) {
+                return null;
             } else {
                 if (randomNumber + (shipLength - 1) > 10) {
-                    placeHorizontallyOrVertically();
+                    return null;
                 } else {
                     const coordsAlreadyOccupied = [];
                     const coordsForShip = [];
+                    coordsForShip.push(randomCoord);
                     for (let i = 1; i < shipLength; i++) {
                         const newNumber = randomNumber + i;
                         const newCoord = randomLetter + newNumber;
@@ -87,29 +146,61 @@ class DOMController {
                         coordsForShip.push(newCoord);
                     }
                     if (coordsAlreadyOccupied.length > 0) {
-                        placeHorizontallyOrVertically();
+                        return null;
                     } else {
+                        /* this removes the coordinates for the currently 
+                        selected ship from the "bank" of available coords*/
+                        remainingGridCoordinates = remainingGridCoordinates.filter(coord => {
+                            for (let chosenCoord of coordsForShip) {
+                                if (coord === chosenCoord) return false;
+                            }
+                            return true;
+                        });
                         return coordsForShip;
                     }
                 }
             }
         }
 
-        
-
-        
-
-
-
-        for (let i = 0; i < 5; i++) {
-            shipLocations.carrier.push(selectCoordAtRandom());
+        function placeShipVertically(shipLength) {
+            const randomLetter = _.sample(Object.keys(letterNumberHash));
+            const randomNumber = _.sample(Object.values(letterNumberHash));
+            const randomCoord = randomLetter + randomNumber;
+            if (!remainingGridCoordinates.includes(randomLetter + randomNumber)) {
+                return null;
+            } else {
+                const randomLetterCodified = letterNumberHash[randomLetter];
+                if (randomLetterCodified + (shipLength - 1) > 10) {
+                    return null;
+                } else {
+                    const coordsAlreadyOccupied = [];
+                    const coordsForShip = [];
+                    coordsForShip.push(randomCoord);
+                    for (let i = 1; i < shipLength; i++) {
+                        const newLetterCodified = randomLetterCodified + i;
+                        const newLetter = numberLetterHash[newLetterCodified];
+                        const newCoord = newLetter + randomNumber;
+                        if (!remainingGridCoordinates.includes(newCoord)) {
+                            coordsAlreadyOccupied.push(newCoord);
+                        }
+                        coordsForShip.push(newCoord);
+                    }
+                    if (coordsAlreadyOccupied.length > 0) {
+                        return null;
+                    } else {
+                        /* this removes the coordinates for the currently 
+                        selected ship from the "bank" of available coords*/
+                        remainingGridCoordinates = remainingGridCoordinates.filter(coord => {
+                            for (let chosenCoord of coordsForShip) {
+                                if (coord === chosenCoord) return false;
+                            }
+                            return true;
+                        });
+                        return coordsForShip;
+                    }
+                }
+            }
         }
-        function selectCoordAtRandom() {
-            const randomCoord = _.sample(remainingGridCoordinates);
-            remainingGridCoordinates = remainingGridCoordinates.filter(coord => coord !== randomCoord);
-            return randomCoord;
-        }
-
     }
 
     handleVolumeIconClick(e) {
@@ -148,7 +239,8 @@ class DOMController {
         } 
     }
 
-    ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard) {
+    ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard, player) {
+        console.log('function fired');
         let winner;
         if (playerGameboard.getAllOfThisPlayersShipsAreSunk() 
         && computerGameboard.getAllOfThisPlayersShipsAreSunk()) {
@@ -167,10 +259,12 @@ class DOMController {
                 // eslint-disable-next-line quotes
                 this.status = "BOTH FLEETS HAVE BEEN SUNK!  IT'S A DRAW!";
             } else if (winner === 'PLAYER') {
+                console.log('player won');
+                const status = document.querySelector('.status');
                 // eslint-disable-next-line quotes
-                this.status = `YOU HAVE SUNK THE ENEMY FLEET! GAME OVER! <a class="play-again" href="#">PLAY AGAIN?</a>`;
+                status.innerHTML = `YOU HAVE SUNK THE ENEMY FLEET! GAME OVER! <a class="play-again" href="#">PLAY AGAIN?</a>`;
                 const playAgainLink = document.querySelector('.play-again');
-                // playAgainLink.onClick = playAgain();
+                playAgainLink.addEventListener('click', () => domController.restartGame(player));
             }
         }
     }
@@ -359,21 +453,21 @@ class DOMController {
             /* The following commands load the actual game after the last ship 
             (the destroyer) is placed */
             if (domController.currentShip === 'destroyer') {
-                const thePlayer = new Player(player.name);
-                const playerGameboard = new Gameboard('player');
-                const computer = new ComputerPlayer();
-                const computerGameboard = new Gameboard('computer');
-                for (const [shipName, arrOfCoords] of Object.entries(domController.shipLocations)) {
-                    const shipNameFirstLetterCapitalised = shipName.slice(0,1).toUpperCase() + shipName.slice(1);
-                    playerGameboard.createShipAndPlaceItOnBoard(shipNameFirstLetterCapitalised, ...arrOfCoords);
-                }
-                const computerCoords = domController.randomlyGenerateEnemyShipPlacements();
-                computerGameboard.createShipAndPlaceItOnBoard('Carrier', 'J6', 'J7', 'J8', 'J9', 'J10');
-                computerGameboard.createShipAndPlaceItOnBoard('Battleship', 'C4', 'D4', 'E4', 'F4');
-                computerGameboard.createShipAndPlaceItOnBoard('Cruiser', 'C8', 'C9', 'C10');
-                computerGameboard.createShipAndPlaceItOnBoard('Submarine', 'H2', 'H3', 'H4');
-                computerGameboard.createShipAndPlaceItOnBoard('Destroyer', 'E1', 'F1');
-                domController.renderGameScreen(playerGameboard, computerGameboard, thePlayer, computer);
+                domController.playGame(player);
+                // const thePlayer = new Player(player.name);
+                // const playerGameboard = new Gameboard('player');
+                // const computer = new ComputerPlayer();
+                // const computerGameboard = new Gameboard('computer');
+                // for (const [shipName, arrOfCoords] of Object.entries(domController.shipLocations)) {
+                //     const shipNameFirstLetterCapitalised = shipName.slice(0,1).toUpperCase() + shipName.slice(1);
+                //     playerGameboard.createShipAndPlaceItOnBoard(shipNameFirstLetterCapitalised, ...arrOfCoords);
+                // }
+                // const computerCoords = domController.randomlyGenerateEnemyShipPlacements();
+                // for (const [shipName, arrOfCoords] of Object.entries(computerCoords)) {
+                //     const shipNameFirstLetterCapitalised = shipName.slice(0,1).toUpperCase() + shipName.slice(1);
+                //     computerGameboard.createShipAndPlaceItOnBoard(shipNameFirstLetterCapitalised, ...arrOfCoords);
+                // }
+                // domController.renderGameScreen(playerGameboard, computerGameboard, thePlayer, computer);
             }
 
             domController.selectShipToPlace();
@@ -856,7 +950,7 @@ class DOMController {
             }     
 
             // every time the player makes a move, check if somebody won the game
-            domController.ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard); 
+            domController.ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard, player); 
             
         }, 2000);
 
