@@ -2,6 +2,7 @@ class Player {
     constructor(name) {
         this.name = name;
         this.shotsFiredByThisPlayer = new Set();
+        this.playerMadeFirstMove = false;
     }
 
     attack(coords, gameBoard) {

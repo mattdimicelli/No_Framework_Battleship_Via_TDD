@@ -18,8 +18,6 @@ import gameplayHTML from './gameplayScreenHTML';
 
 class DOMController {
     constructor() {
-        this.status = null;
-        this.firstTurn = true;
         this.introMusick = null;
         this.sonarSound = null;
         this.handleVolumeIconClick = this.handleVolumeIconClick.bind(this);
@@ -32,13 +30,35 @@ class DOMController {
             destroyer: null,
         };
         this.currentShip = null;
-        this.axis = 'VERTICAL';
         this.whereToPlaceCurrentShip = null;
+        this.letterNumberHash = {
+            'A': 1,
+            'B': 2,
+            'C': 3,
+            'D': 4,
+            'E': 5,
+            'F': 6,
+            'G': 7,
+            'H': 8,
+            'I': 9,
+            'J': 10,
+        };
+        this.numberLetterHash = {
+            1: 'A',
+            2: 'B',
+            3: 'C',
+            4: 'D',
+            5: 'E',
+            6: 'F',
+            7: 'G',
+            8: 'H',
+            9: 'I',
+            10: 'J',
+        };
     }
 
     restartGame(player) {
-        domController.status = null;
-        domController.firstTurn = true;
+        player.playerMadeFirstMove = false;
         domController.shipLocations = {
             carrier: null,
             battleship: null,
@@ -47,12 +67,11 @@ class DOMController {
             destroyer: null,
         };
         domController.currentShip = null;
-        domController.axis = 'VERTICAL';
         domController.whereToPlaceCurrentShip = null;
         domController.renderPlaceShipsScreen(player);
     }
 
-    playGame(player) {
+    startGamePlay(player) {
         const thePlayer = new Player(player.name);
         const playerGameboard = new Gameboard('player');
         const computer = new ComputerPlayer();
@@ -96,21 +115,22 @@ class DOMController {
     }
 
     selectNextShipToPlace() {
-        const ships = this.shipLocations;
+        const ships = domController.shipLocations;
         if (ships.carrier === null) {
-            this.currentShip = 'carrier';
+            domController.currentShip = 'carrier';
         } else if (ships.battleship === null) {
-            this.currentShip = 'battleship';
+            domController.currentShip = 'battleship';
         } else if (ships.cruiser === null) {
-            this.currentShip = 'cruiser';
+            domController.currentShip = 'cruiser';
         } else if (ships.submarine === null) {
-            this.currentShip = 'submarine';
+            domController.currentShip = 'submarine';
         } else if (ships.destroyer === null) {
-            this.currentShip = 'destroyer';
+            domController.currentShip = 'destroyer';
         } 
     }
 
     ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard, player) {
+        const status = document.querySelector('.status');
         let winner;
         if (playerGameboard.getAllOfThisPlayersShipsAreSunk() 
         && computerGameboard.getAllOfThisPlayersShipsAreSunk()) {
@@ -124,12 +144,11 @@ class DOMController {
         }
         if (winner) {
             if(winner === 'ENEMY') {
-                this.status = 'GAME OVER. THE ENEMY HAS SUNK YOUR FLEET!';
+                status.textContent = 'GAME OVER. THE ENEMY HAS SUNK YOUR FLEET!';
             } else if (winner === 'DRAW') {
                 // eslint-disable-next-line quotes
-                this.status = "BOTH FLEETS HAVE BEEN SUNK!  IT'S A DRAW!";
+                status.textContent = "BOTH FLEETS HAVE BEEN SUNK!  IT'S A DRAW!";
             } else if (winner === 'PLAYER') {
-                const status = document.querySelector('.status');
                 // eslint-disable-next-line quotes
                 status.innerHTML = `YOU HAVE SUNK THE ENEMY FLEET! GAME OVER! 
                 <a class="play-again" href="#">PLAY AGAIN?</a>`;
@@ -142,45 +161,39 @@ class DOMController {
     }
 
     renderPlaceShipsScreen(player) {
-        this.selectNextShipToPlace();
-        /*on the first render of the gameplay screen, sets the volumeIcon based on 
-        whether or not the player had the music playing when the START button was
-        clicked*/ 
-        const volumeIcon = (
-            (this.introMusick.currentTime > 0 && 
-                (!this.introMusick.paused && !this.introMusick.ended))
-            || (this.sonarSound.currentTime > 0 &&
-                 (!this.sonarSound.paused && !this.sonarSound.ended)) 
-        ) ? '🔊︁' : '︁︁🔇';
-
-        const playerNameUppercase = player.name.toUpperCase();
-        
-        const capitalizedShipName = this.currentShip.toUpperCase();
-        this.status = `REAR ADMIRAL ${playerNameUppercase}, PLACE YOUR 
-        ${capitalizedShipName}`;
+        domController.selectNextShipToPlace();
         
         const body = document.querySelector('body');
-        body.innerHTML = '';
         body.insertAdjacentHTML('afterbegin', placeShipsHTML);
         const status = document.querySelector('.status');
-        status.textContent = this.status;
         const volumeIconAnchor = document.querySelector('.set-ships-screen-volume');
-        volumeIconAnchor.textContent = volumeIcon;
         const changeAxisBtn = document.querySelector('.change-axis');
-        changeAxisBtn.textContent = this.axis;      
+        const cells = document.querySelectorAll('.cell');
+
+        const playerNameUppercase = player.name.toUpperCase();
+        const capitalizedShipName = domController.currentShip.toUpperCase();
+        let axis = 'VERTICAL';
+
+        /*Sets the volumeIcon based on whether or not the player had the music 
+        playing when the START button wasclicked*/ 
+        const volumeIcon = domController.setVolumeIcon();
+        volumeIconAnchor.textContent = volumeIcon;
+
+        status.textContent = `REAR ADMIRAL ${playerNameUppercase}, PLACE YOUR 
+        ${capitalizedShipName}`;
+
+        changeAxisBtn.textContent = axis;      
 
         volumeIconAnchor.addEventListener('click', domController.handleVolumeIconClick);
         changeAxisBtn.addEventListener('click', handleChangeAxis);
-        const cells = document.querySelectorAll('.cell');
         cells.forEach(cell => cell.addEventListener('mouseover', handleMouseOver));
         cells.forEach(cell => cell.addEventListener('click', handleClick));
 
-        function handleChangeAxis(e) {
-            const btn = e.currentTarget;
-            if (domController.axis === 'VERTICAL') {
-                domController.axis = 'HORIZONTAL';
-            } else {domController.axis = 'VERTICAL';}
-            btn.textContent = domController.axis;
+        function handleChangeAxis() {
+            if (axis === 'VERTICAL') {
+                axis = 'HORIZONTAL';
+            } else {axis = 'VERTICAL';}
+            changeAxisBtn.textContent = axis;
         }
 
         function handleClick() {
@@ -209,6 +222,9 @@ class DOMController {
                 cell.classList.add('ship-permanent');
             }
 
+            /*Although a variable lowercaseShipName is declared in the outer
+            function, must make a new variable in this function the currentShip
+            gets updated*/
             const lowercaseShipName = domController.currentShip;
             domController.shipLocations[lowercaseShipName] =
             domController.whereToPlaceCurrentShip;
@@ -216,13 +232,31 @@ class DOMController {
             /* Load the actual gameplay after the last ship (the destroyer) is
              placed */
             if (domController.currentShip === 'destroyer') {
-                domController.playGame(player);
+                domController.startGamePlay(player);
             }
 
             domController.selectNextShipToPlace();
-            const uppercaseShipName = domController.currentShip.toUpperCase();
+            /*Although a variable capitalizedShipName is declared in the outer
+            function, must make a new variable in this function the currentShip
+            gets updated*/
+            const capitalizedShipName = domController.currentShip.toUpperCase();
             status.textContent = `REAR ADMIRAL ${playerNameUppercase}, PLACE 
-            YOUR ${uppercaseShipName}`;
+            YOUR ${capitalizedShipName}`;
+        }
+
+        function getLengthOfShipToPlace() {
+            let length;
+            const ship = domController.currentShip;
+            if (ship === 'carrier') {
+                length = 5;
+            } else if (ship === 'battleship') {
+                length = 4;
+            } else if (ship === 'cruiser' || ship === 'submarine') {
+                length = 3;
+            } else if (ship === 'destroyer') {
+                length = 2;
+            }
+            return length;
         }
 
         function handleMouseOver(e) {
@@ -235,22 +269,13 @@ class DOMController {
             mousedOver, this property will not be updated */
             domController.whereToPlaceCurrentShip = null;
 
-            let length;
-            const ship = domController.currentShip;
-            if (ship === 'carrier') {
-                length = 5;
-            } else if (ship === 'battleship') {
-                length = 4;
-            } else if (ship === 'cruiser' || ship === 'submarine') {
-                length = 3;
-            } else if (ship === 'destroyer') {
-                length = 2;
-            }
+            const length = getLengthOfShipToPlace();
+            
             const mousePointerCoord = e.currentTarget.classList[2];
             const coordLetter = mousePointerCoord.slice(0,1);
             const coordNumber = Number(mousePointerCoord.slice(1));
 
-            if (domController.axis === 'HORIZONTAL') {
+            if (axis === 'HORIZONTAL') {
                 const digitsOfCoordsWhereShipMightBePlaced = [];
                 for (let i=0; i < length; i++) {
                     const nextCellNum = coordNumber + i;
@@ -266,31 +291,8 @@ class DOMController {
                  });  
             }
 
-            if (domController.axis === 'VERTICAL') {
-                const letterNumberHash = {
-                    'A': 1,
-                    'B': 2,
-                    'C': 3,
-                    'D': 4,
-                    'E': 5,
-                    'F': 6,
-                    'G': 7,
-                    'H': 8,
-                    'I': 9,
-                    'J': 10,
-                };
-                const numberLetterHash = {
-                    1: 'A',
-                    2: 'B',
-                    3: 'C',
-                    4: 'D',
-                    5: 'E',
-                    6: 'F',
-                    7: 'G',
-                    8: 'H',
-                    9: 'I',
-                    10: 'J',
-                };
+            if (axis === 'VERTICAL') {
+                const { letterNumberHash, numberLetterHash } = domController;
                 const letterCodified = letterNumberHash[coordLetter];
                 const lettersofCoordsWhereShipMightBePlaced = [];
                 for (let i=0; i < length; i++) {
@@ -303,9 +305,12 @@ class DOMController {
                     const nextCellLetter = numberLetterHash[nextCellLetterCodified];
                     lettersofCoordsWhereShipMightBePlaced.push(nextCellLetter);
                 }
-                domController.whereToPlaceCurrentShip = lettersofCoordsWhereShipMightBePlaced.map(letter => letter + coordNumber);
+                domController.whereToPlaceCurrentShip =
+                 lettersofCoordsWhereShipMightBePlaced.map(letter => letter + coordNumber);
             }
 
+            /* if the ship can be placed where the mouse is hovering, show it's
+            "shadow" on the grid */
             if (domController.whereToPlaceCurrentShip) {
                 for (const coord of domController.whereToPlaceCurrentShip) {
                     const cell = document.querySelector(`.cell.player.${coord}`);
@@ -360,109 +365,92 @@ class DOMController {
         volume.addEventListener('click', domController.handleVolumeIconClick);
         startButton.addEventListener('click', handleStartBtn);
         function handleStartBtn() {
-            const nameInput = document.querySelector('.name-input');
             const playerName = nameInput.value;
             const player = { name: playerName };
             domController.renderPlaceShipsScreen(player);
         }
     }
 
-    renderGameplay(playerGameboard, computerGameboard, player, computer) {
-        /*on the first render of the gameScreen, sets the volumeIcon based on 
-        whether or not the player had the music playing when the START button was
-        clicked*/ 
+    setVolumeIcon() {
         const volumeIcon = (
             (this.introMusick.currentTime > 0 && (!this.introMusick.paused &&
                  !this.introMusick.ended))
             || (this.sonarSound.currentTime > 0 && (!this.sonarSound.paused &&
                  !this.sonarSound.ended)) 
         ) ? '🔊︁' : '︁︁🔇';
+        return volumeIcon;
+    }
 
+    renderGameplay(playerGameboard, computerGameboard, player, computer) {
         const playerNameUppercase = player.name.toUpperCase();
-
-        // programs the initial status to include the player's name
-        if (this.status === 'AWAITING ORDERS, REAR ADMIRAL') {
-            this.status = `AWAITING ORDERS, REAR ADMIRAL ${playerNameUppercase}`;
-        }
-        
+   
         const body = document.querySelector('body');
-        body.innerHTML = '';
         body.insertAdjacentHTML('afterbegin', gameplayHTML);     
 
         const volumeIconAnchor = document.querySelector('.volume');
-        volumeIconAnchor.textContent = volumeIcon;
-        const status = document.querySelector('.status');
-        status.textContent = this.status;
-        volumeIconAnchor.addEventListener('click', domController.handleVolumeIconClick);
-
         const computerBoard = document.querySelector('.game-computer-board');
         const computerCells = computerBoard.querySelectorAll('.cell');
-        computerCells.forEach(cell => cell.addEventListener('click', handleFire));
+        const status = document.querySelector('.status');
+        /*on the first render of the gameplay screen, sets the volumeIcon based on 
+        whether or not the player had the music playing when the START button was
+        clicked*/ 
+        const volumeIcon = domController.setVolumeIcon();
+        volumeIconAnchor.textContent = volumeIcon;
+        status.textContent = `AWAITING ORDERS, REAR ADMIRAL ${playerNameUppercase}`;
 
+        volumeIconAnchor.addEventListener('click', domController.handleVolumeIconClick);
+        computerCells.forEach(cell => cell.addEventListener('click', handleClick));
 
-        // shows location of ships on player's board
-        for (let setOfLocations of playerGameboard.occupiedLocations.values()) {
-            for (let location of setOfLocations) {
-                const cell = document.querySelector(`.cell.player.${location}`);
-                cell.classList.add('ship');
-            }
-        }    
-        
-        // shows missed shots on computer's gameboard
-        for (const missedShotLocation of computerGameboard.missedShotsFromOpponent) {
-            const dot = document.querySelector(`.cell.computer.${missedShotLocation} span`);
-            dot.classList.remove('invisible-dot');
-            dot.classList.add('make-visible-and-white');
-        }
+        showPlayersShips();
 
-        //shows missed shots on player's gameboard
-        for (const missedShotLocation of playerGameboard.missedShotsFromOpponent) {
-            const dot = document.querySelector(`.cell.player.${missedShotLocation} span`);
-            dot.classList.remove('invisible-dot');
-            dot.classList.add('make-visible-and-white');
-        }
+        function createComputersAttackBehindTheScenes() {
+         
+            // the computer doesn't make it's first attack until after the player
+            let resultOfComputersPlay;
+            let shipType;
+            if (player.playerMadeFirstMove) {
+                const result = computer.attack(playerGameboard);
+                // If result is an arr, additional rendering needed
+                if (Array.isArray(result)) {
+                    resultOfComputersPlay = result[0];
+                    shipType = result[1].toUpperCase();
+                }
+                
+                /*Although the computer makes it's play immediately, this timer delays 
+                update to the UI so that it appears that the computer is "taking some time"
+                to make it's move */ 
+                setTimeout(() => {
+                    // update missed shots (does for both players) after enemy attack
+                    showMissedShots();
+                    // update hits (does for both players) after enemy attack
+                    showHits();
+                    /* If any of the player's ships are hit (and/or sunk), the following effects take
+                    place, otherwise, no update to the display is needed */
+                    if (resultOfComputersPlay === 'hit ship') {
+                        playSounds('hitSounds');
+                        status.textContent = 'THE ' + shipType + ' HAS BEEN HIT BY THE ENEMY!';
+                    } else if (resultOfComputersPlay === 'sunk ship') {
+                        playSounds('hitSounds');
+                        status.textContent = 'REAR ADMIRAL... THE ' + shipType + ' HAS BEEN DESTROYED BY THE ENEMY!';
+                    }     
 
-        //shows hits on computer's gameboard
-        for (const ship of computerGameboard.occupiedLocations.keys()) {
-            for (const hitLocation of ship.damageLocations) {
-                const dot = document.querySelector(`.cell.computer.${hitLocation} span`);
-                dot.classList.remove('invisible-dot');
-                dot.classList.add('hit');
-            }
-        }
-
-        //shows hits on player's gameboard
-        for (const ship of playerGameboard.occupiedLocations.keys()) {
-            for (const hitLocation of ship.damageLocations) {
-                const dot = document.querySelector(`.cell.player.${hitLocation} span`);
-                dot.classList.remove('invisible-dot');
-                dot.classList.add('hit');
-            }
-        }
-
-        /* on the first turn, the player should gets to take turn before
-        the computer makes it's first play */
-        let resultOfComputersPlay;
-        let shipType;
-        if (!this.firstTurn) {
-            const result = computer.attack(playerGameboard);
-            if(Array.isArray(result)) {
-                resultOfComputersPlay = result[0];
-                shipType = result[1];
+                    // every time after the computer plays, check if somebody won the game
+                    domController.ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard, player); 
+                }, 2000);
             }
         }
 
-        /*Although the computer makes it's play immediately, this timer delays 
-        update to the UI so that it appears that the computer is "taking some time"
-        to make it's move */ 
-        const computerMoveTimer = setTimeout(() => {
-            // update missed shots on player's board after enemy attack
-            for (const missedShotLocation of playerGameboard.missedShotsFromOpponent) {
-                const dot = document.querySelector(`.cell.player.${missedShotLocation} span`);
-                dot.classList.remove('invisible-dot');
-                dot.classList.add('make-visible-and-white');
+        function showHits(){
+            //shows hits on computer's gameboard
+            for (const ship of computerGameboard.occupiedLocations.keys()) {
+                for (const hitLocation of ship.damageLocations) {
+                    const dot = document.querySelector(`.cell.computer.${hitLocation} span`);
+                    dot.classList.remove('invisible-dot');
+                    dot.classList.add('hit');
+                }
             }
-            // updated hits from enemy on player's board after enemy attack
+
+            //shows hits on player's gameboard
             for (const ship of playerGameboard.occupiedLocations.keys()) {
                 for (const hitLocation of ship.damageLocations) {
                     const dot = document.querySelector(`.cell.player.${hitLocation} span`);
@@ -470,56 +458,76 @@ class DOMController {
                     dot.classList.add('hit');
                 }
             }
-            /* If any of the player's ships are hit (and/or sunk), the following effects take
-            place, otherwise, no update to the display is needed */
-            if (resultOfComputersPlay === 'hit ship') {
-                playSounds('hitSounds');
-                domController.status = 'THE ' + shipType.toUpperCase() + ' HAS BEEN HIT BY THE ENEMY!';
-                const status = document.querySelector('.status');
-                status.textContent = domController.status;
-            } else if (resultOfComputersPlay === 'sunk ship') {
-                playSounds('hitSounds');
-                domController.status = 'REAR ADMIRAL... THE ' + shipType.toUpperCase() + ' HAS BEEN DESTROYED BY THE ENEMY!';
-                const status = document.querySelector('.status');
-                status.textContent = domController.status;
-            }     
+        }
 
-            // every time the player makes a move, check if somebody won the game
-            domController.ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard, player); 
-            
-        }, 2000);
-
-    
-        function handleFire(e) {
-            /* clicking any location on the enemy board signifies that the player
-            has taken his first (or subsequent) turn already */
-            domController.firstTurn = false;
-
-            const coords = e.currentTarget.classList[2];
-            const resultOfAttackOnEnemy = player.attack(coords, computerGameboard);
-            if (Array.isArray(resultOfAttackOnEnemy)) {
-                const shipName = resultOfAttackOnEnemy[1].toUpperCase();
-                if (resultOfAttackOnEnemy[0] === 'hit ship') {
-                    playSounds('shootSounds');
-                    const hitStatuses = ['DIRECT HIT!', 'TARGET HIT!', `TARGET HIT AT COORDINATE ${coords}!`, 'ENEMY TARGET HIT!', `ENEMY TARGET HIT AT COORDINATE ${coords}!`];
-                    domController.status = _.sample(hitStatuses);
-                } else if (resultOfAttackOnEnemy[0] === 'sunk ship') {
-                    playSounds('shootSounds');
-                    const enemySunkStatuses = [`ENEMY ${shipName} SUNK!`, `REAR ADMIRAL ${playerNameUppercase}, ENEMY ${shipName} DESTROYED!`, `ENEMY ${shipName} ELIMINATED!`];
-                    domController.status = _.sample(enemySunkStatuses);
+        function showPlayersShips() {
+            // shows location of ships on player's board
+            for (let setOfLocations of playerGameboard.occupiedLocations.values()) {
+                for (let location of setOfLocations) {
+                    const cell = document.querySelector(`.cell.player.${location}`);
+                    cell.classList.add('ship');
                 }
-            } else if (resultOfAttackOnEnemy === 'attack missed') {
-                const missStatuses = ['TARGET MISSED', 'TARGET MISSED, REAR ADMIRAL', 'ENEMY TARGET MISSED'];
-                const missStatus = _.sample(missStatuses);
-                domController.status = missStatus;
-                playSounds('shootSounds');
-            } else if (resultOfAttackOnEnemy === 'repeat shot') {
-                /* if the cell has already been shot at, clicking here
-                shouldn't do anything */
-                return;
+            }    
+        }
+
+        function showMissedShots() {
+            // shows missed shots on computer's gameboard
+            for (const missedShotLocation of computerGameboard.missedShotsFromOpponent) {
+                const dot = document.querySelector(`.cell.computer.${missedShotLocation} span`);
+                dot.classList.remove('invisible-dot');
+                dot.classList.add('make-visible-and-white');
             }
 
-            domController.renderGameplay(playerGameboard, computerGameboard, player, computer);
+            //shows missed shots on player's gameboard
+            for (const missedShotLocation of playerGameboard.missedShotsFromOpponent) {
+                const dot = document.querySelector(`.cell.player.${missedShotLocation} span`);
+                dot.classList.remove('invisible-dot');
+                dot.classList.add('make-visible-and-white');
+            }
+        }
+
+        function handleClick(e) {
+            /* clicking any location on the enemy board signifies that the player
+            has taken his first (or subsequent) turn already */
+            player.playerMadeFirstMove = true;
+            // only do the following if a *unique* attack is attempted by the player
+            if (attackAgainstComputer(e) !== 'repeat shot') {
+                showMissedShots();
+                showHits();
+                createComputersAttackBehindTheScenes();
+            }
+            
+            function attackAgainstComputer(e) {
+                const coords = e.currentTarget.classList[2];
+                const resultOfAttackOnEnemy = player.attack(coords, computerGameboard);
+                if (Array.isArray(resultOfAttackOnEnemy)) {
+                    const shipName = resultOfAttackOnEnemy[1].toUpperCase();
+                    if (resultOfAttackOnEnemy[0] === 'hit ship') {
+                        playSounds('shootSounds');
+                        const hitStatuses = ['DIRECT HIT!', 'TARGET HIT!',
+                            `TARGET HIT AT COORDINATE ${coords}!`, 'ENEMY TARGET HIT!',
+                            `ENEMY TARGET HIT AT COORDINATE ${coords}!`];
+                        status.textContent = _.sample(hitStatuses);
+                    } else if (resultOfAttackOnEnemy[0] === 'sunk ship') {
+                        playSounds('shootSounds');
+                        const enemySunkStatuses = [`ENEMY ${shipName} SUNK!`,
+                            `REAR ADMIRAL ${playerNameUppercase}, ENEMY ${shipName} DESTROYED!`,
+                            `ENEMY ${shipName} ELIMINATED!`];
+                        status.textContent = _.sample(enemySunkStatuses);
+                    }
+                } else if (resultOfAttackOnEnemy === 'attack missed') {
+                    const missStatuses = ['TARGET MISSED',
+                        'TARGET MISSED, REAR ADMIRAL', 'ENEMY TARGET MISSED'];
+                    const missStatus = _.sample(missStatuses);
+                    status.textContent = missStatus;
+                    playSounds('shootSounds');
+                } else if (resultOfAttackOnEnemy === 'repeat shot') {
+                    /* if the cell has already been shot at, return 'repeat shot'
+                    so that the gameboard knows that it doesn't need to re-
+                    render */
+                    return resultOfAttackOnEnemy;
+                }
+            }
         }
 
         function playSounds(typeOfSounds) {
@@ -528,7 +536,8 @@ class DOMController {
             if (typeOfSounds === 'hitSounds') {
                 soundUrls = [explosion1, explosion2, explosion3];
             } else if (typeOfSounds === 'shootSounds') {
-                soundUrls = [lighterBlastSound, missleLaunchSound, turretBlastSound, twoBlastsSound, railgunSound];
+                soundUrls = [lighterBlastSound, missleLaunchSound,
+                    turretBlastSound, twoBlastsSound, railgunSound];
             }
             const randomSoundUrl = _.sample(soundUrls);
             const sound = new Audio(randomSoundUrl);

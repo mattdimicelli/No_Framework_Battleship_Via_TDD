@@ -19,10 +19,8 @@ class ComputerPlayer extends Player {
             const result = gameBoard.receiveAttack(coords);
             this.shotsFiredByThisPlayer.add(coords);
             if (Array.isArray(result)) return result;
-            // if (resultOfAttack === 'hit ship') return 'hit';
         } else {
-            this.attack(gameBoard);
-            // what's going on here?  infinite loop
+            return this.attack(gameBoard);
         }
     }
 
@@ -69,7 +67,7 @@ class ComputerPlayer extends Player {
             destroyer: placeHorizontallyOrVertically(2),
         };
 
-        console.log(shipLocations);
+        console.log('computer ship locations', shipLocations);
         return shipLocations;
     
         function placeHorizontallyOrVertically(shipLength) {
