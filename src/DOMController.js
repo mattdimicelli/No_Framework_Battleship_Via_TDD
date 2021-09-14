@@ -364,8 +364,14 @@ class DOMController {
   
         volume.addEventListener('click', domController.handleVolumeIconClick);
         startButton.addEventListener('click', handleStartBtn);
-        function handleStartBtn() {
+
+        function handleStartBtn(e) {
+            e.preventDefault();
             const playerName = nameInput.value;
+            if(!playerName) {
+                nameInput.focus();
+                return;
+            } 
             const player = { name: playerName };
             domController.renderPlaceShipsScreen(player);
         }
