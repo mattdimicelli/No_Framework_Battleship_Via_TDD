@@ -12,6 +12,8 @@ import explosion3 from './audio/explosion3.mp3';
 import Player from './Player';
 import Gameboard from './Gameboard';
 import ComputerPlayer from './ComputerPlayer';
+import placeShipsHTML from './placeShipsScreenHTML';
+import gameplayHTML from './gameplayScreenHTML';
 
 
 class DOMController {
@@ -51,33 +53,37 @@ class DOMController {
     }
 
     playGame(player) {
-        console.log('play new game fired');
         const thePlayer = new Player(player.name);
         const playerGameboard = new Gameboard('player');
         const computer = new ComputerPlayer();
         const computerGameboard = new Gameboard('computer');
-        for (const [shipName, arrOfCoords] of Object.entries(domController.shipLocations)) {
-            const shipNameFirstLetterCapitalised = shipName.slice(0,1).toUpperCase() + shipName.slice(1);
+        for (const [shipName, arrOfCoords] of
+            Object.entries(domController.shipLocations)) {
+            const shipNameFirstLetterCapitalised = 
+            shipName.slice(0,1).toUpperCase() + shipName.slice(1);
             playerGameboard.createShipAndPlaceItOnBoard(shipNameFirstLetterCapitalised, ...arrOfCoords);
         }
         const computerCoords = computer.randomlyGenerateComputerShipPlacements();
         for (const [shipName, arrOfCoords] of Object.entries(computerCoords)) {
-            const shipNameFirstLetterCapitalised = shipName.slice(0,1).toUpperCase() + shipName.slice(1);
+            const shipNameFirstLetterCapitalised = 
+            shipName.slice(0,1).toUpperCase() + shipName.slice(1);
             computerGameboard.createShipAndPlaceItOnBoard(shipNameFirstLetterCapitalised, ...arrOfCoords);
         }
-        domController.renderGameScreen(playerGameboard, computerGameboard, thePlayer, computer);
+        domController.renderGameplay(playerGameboard, computerGameboard, thePlayer, computer);
     }
 
     handleVolumeIconClick(e) {
         const volumeAEl = e.currentTarget;
-        if (volumeAEl.textContent === '🔊︁') { // when this icon displayed, sound should be playing
+        // when this icon displayed, sound should be playing
+        if (volumeAEl.textContent === '🔊︁') { 
             volumeAEl.textContent = '︁︁🔇';
             if (this.introMusick.currentTime > 0 && !this.introMusick.ended) {
                 this.introMusick.pause();
             } else if (this.sonarSound.currentTime > 0 && !this.sonarSound.ended) {
                 this.sonarSound.pause();
             }
-        } else if (volumeAEl.textContent === '︁︁🔇') { //when displayed, sound should be muted
+            //when displayed, sound should be muted
+        } else if (volumeAEl.textContent === '︁︁🔇') { 
             volumeAEl.textContent = '🔊︁';
             if(this.introMusick.paused && !this.introMusick.ended) {
                 this.introMusick.play();
@@ -89,7 +95,7 @@ class DOMController {
         }
     }
 
-    selectShipToPlace() {
+    selectNextShipToPlace() {
         const ships = this.shipLocations;
         if (ships.carrier === null) {
             this.currentShip = 'carrier';
@@ -105,7 +111,6 @@ class DOMController {
     }
 
     ifThereIsAWinnerAnnounceIt(playerGameboard, computerGameboard, player) {
-        console.log('function fired');
         let winner;
         if (playerGameboard.getAllOfThisPlayersShipsAreSunk() 
         && computerGameboard.getAllOfThisPlayersShipsAreSunk()) {
@@ -124,154 +129,47 @@ class DOMController {
                 // eslint-disable-next-line quotes
                 this.status = "BOTH FLEETS HAVE BEEN SUNK!  IT'S A DRAW!";
             } else if (winner === 'PLAYER') {
-                console.log('player won');
                 const status = document.querySelector('.status');
                 // eslint-disable-next-line quotes
-                status.innerHTML = `YOU HAVE SUNK THE ENEMY FLEET! GAME OVER! <a class="play-again" href="#">PLAY AGAIN?</a>`;
+                status.innerHTML = `YOU HAVE SUNK THE ENEMY FLEET! GAME OVER! 
+                <a class="play-again" href="#">PLAY AGAIN?</a>`;
                 const playAgainLink = document.querySelector('.play-again');
-                playAgainLink.addEventListener('click', () => domController.restartGame(player));
+                playAgainLink.addEventListener('click', () => {
+                    domController.restartGame(player);
+                });
             }
         }
     }
 
     renderPlaceShipsScreen(player) {
-        this.selectShipToPlace();
-        /*on the first render of the gameScreen, sets the volumeIcon based on 
+        this.selectNextShipToPlace();
+        /*on the first render of the gameplay screen, sets the volumeIcon based on 
         whether or not the player had the music playing when the START button was
         clicked*/ 
         const volumeIcon = (
-            (this.introMusick.currentTime > 0 && (!this.introMusick.paused && !this.introMusick.ended))
-            || (this.sonarSound.currentTime > 0 && (!this.sonarSound.paused && !this.sonarSound.ended)) 
+            (this.introMusick.currentTime > 0 && 
+                (!this.introMusick.paused && !this.introMusick.ended))
+            || (this.sonarSound.currentTime > 0 &&
+                 (!this.sonarSound.paused && !this.sonarSound.ended)) 
         ) ? '🔊︁' : '︁︁🔇';
 
         const playerNameUppercase = player.name.toUpperCase();
         
         const capitalizedShipName = this.currentShip.toUpperCase();
-        this.status = `REAR ADMIRAL ${playerNameUppercase}, PLACE YOUR ${capitalizedShipName}`;
+        this.status = `REAR ADMIRAL ${playerNameUppercase}, PLACE YOUR 
+        ${capitalizedShipName}`;
         
-
-        const html = `
-        <div class="main-container">
-            <header class="game-header">
-                <div class="game-title-container">
-                    <h1 class="game-title">BATTLESHIP</h1>
-                </div>
-                <h2 class="status">${this.status}</h2>
-                <a href="#" class="set-ships-screen-volume">${volumeIcon}</a>
-                <a href="#" class="change-axis">${this.axis}</a>
-            </header>
-            <div class="set-ships-board">
-                <div class="cell player A1"></div>
-                <div class="cell player A2"></div>
-                <div class="cell player A3"></div>
-                <div class="cell player A4"></div>
-                <div class="cell player A5"></div>
-                <div class="cell player A6"></div>
-                <div class="cell player A7"></div>
-                <div class="cell player A8"></div>
-                <div class="cell player A9"></div>
-                <div class="cell player A10"></div>
-                <div class="cell player B1"></div>
-                <div class="cell player B2"></div>
-                <div class="cell player B3"></div>
-                <div class="cell player B4"></div>
-                <div class="cell player B5"></div>
-                <div class="cell player B6"></div>
-                <div class="cell player B7"></div>
-                <div class="cell player B8"></div>
-                <div class="cell player B9"></div>
-                <div class="cell player B10"></div>
-                <div class="cell player C1"></div>
-                <div class="cell player C2"></div>
-                <div class="cell player C3"></div>
-                <div class="cell player C4"></div>
-                <div class="cell player C5"></div>
-                <div class="cell player C6"></div>
-                <div class="cell player C7"></div>
-                <div class="cell player C8"></div>
-                <div class="cell player C9"></div>
-                <div class="cell player C10"></div>
-                <div class="cell player D1"></div>
-                <div class="cell player D2"></div>
-                <div class="cell player D3"></div>
-                <div class="cell player D4"></div>
-                <div class="cell player D5"></div>
-                <div class="cell player D6"></div>
-                <div class="cell player D7"></div>
-                <div class="cell player D8"></div>
-                <div class="cell player D9"></div>
-                <div class="cell player D10"></div>  
-                <div class="cell player E1"></div>
-                <div class="cell player E2"></div>
-                <div class="cell player E3"></div>
-                <div class="cell player E4"></div>
-                <div class="cell player E5"></div>
-                <div class="cell player E6"></div>
-                <div class="cell player E7"></div>
-                <div class="cell player E8"></div>
-                <div class="cell player E9"></div>
-                <div class="cell player E10"></div>
-                <div class="cell player F1"></div>
-                <div class="cell player F2"></div>
-                <div class="cell player F3"></div>
-                <div class="cell player F4"></div>
-                <div class="cell player F5"></div>
-                <div class="cell player F6"></div>
-                <div class="cell player F7"></div>
-                <div class="cell player F8"></div>
-                <div class="cell player F9"></div>
-                <div class="cell player F10"></div>
-                <div class="cell player G1"></div>
-                <div class="cell player G2"></div>
-                <div class="cell player G3"></div>
-                <div class="cell player G4"></div>
-                <div class="cell player G5"></div>
-                <div class="cell player G6"></div>
-                <div class="cell player G7"></div>
-                <div class="cell player G8"></div>
-                <div class="cell player G9"></div>
-                <div class="cell player G10"></div>
-                <div class="cell player H1"></div>
-                <div class="cell player H2"></div>
-                <div class="cell player H3"></div>
-                <div class="cell player H4"></div>
-                <div class="cell player H5"></div>
-                <div class="cell player H6"></div>
-                <div class="cell player H7"></div>
-                <div class="cell player H8"></div>
-                <div class="cell player H9"></div>
-                <div class="cell player H10"></div>
-                <div class="cell player I1"></div>
-                <div class="cell player I2"></div>
-                <div class="cell player I3"></div>
-                <div class="cell player I4"></div>
-                <div class="cell player I5"></div>
-                <div class="cell player I6"></div>
-                <div class="cell player I7"></div>
-                <div class="cell player I8"></div>
-                <div class="cell player I9"></div>
-                <div class="cell player I10"></div>
-                <div class="cell player J1"></div>
-                <div class="cell player J2"></div>
-                <div class="cell player J3"></div>
-                <div class="cell player J4"></div>
-                <div class="cell player J5"></div>
-                <div class="cell player J6"></div>
-                <div class="cell player J7"></div>
-                <div class="cell player J8"></div>
-                <div class="cell player J9"></div>
-                <div class="cell player J10"></div>
-            </div>
-        </div>
-        `;
-
         const body = document.querySelector('body');
         body.innerHTML = '';
-        body.insertAdjacentHTML('afterbegin', html);     
-
-        const volumeATag = document.querySelector('.set-ships-screen-volume');
-        volumeATag.addEventListener('click', domController.handleVolumeIconClick);
+        body.insertAdjacentHTML('afterbegin', placeShipsHTML);
+        const status = document.querySelector('.status');
+        status.textContent = this.status;
+        const volumeIconAnchor = document.querySelector('.set-ships-screen-volume');
+        volumeIconAnchor.textContent = volumeIcon;
         const changeAxisBtn = document.querySelector('.change-axis');
+        changeAxisBtn.textContent = this.axis;      
+
+        volumeIconAnchor.addEventListener('click', domController.handleVolumeIconClick);
         changeAxisBtn.addEventListener('click', handleChangeAxis);
         const cells = document.querySelectorAll('.cell');
         cells.forEach(cell => cell.addEventListener('mouseover', handleMouseOver));
@@ -289,14 +187,14 @@ class DOMController {
             /*If the player clicks on a spot where the ship can't be placed,
             don't do anything*/
             if (domController.whereToPlaceCurrentShip === null) {
-                console.log('does nothing');
                 return;
             }
 
             /* If a cell is already occupied by another ship, clicking should do
             nothing */
             for (const coord of domController.whereToPlaceCurrentShip) {
-                for (const arrOfCoordsOfAlreadyPlacedShip of Object.values(domController.shipLocations)) {
+                for (const arrOfCoordsOfAlreadyPlacedShip of 
+                    Object.values(domController.shipLocations)) {
                     if (arrOfCoordsOfAlreadyPlacedShip) {
                         if (arrOfCoordsOfAlreadyPlacedShip.includes(coord)) {
                             return;
@@ -312,43 +210,29 @@ class DOMController {
             }
 
             const lowercaseShipName = domController.currentShip;
-            domController.shipLocations[lowercaseShipName] = domController.whereToPlaceCurrentShip;
-            console.log(domController.shipLocations);
+            domController.shipLocations[lowercaseShipName] =
+            domController.whereToPlaceCurrentShip;
 
-            /* The following commands load the actual game after the last ship 
-            (the destroyer) is placed */
+            /* Load the actual gameplay after the last ship (the destroyer) is
+             placed */
             if (domController.currentShip === 'destroyer') {
                 domController.playGame(player);
-                // const thePlayer = new Player(player.name);
-                // const playerGameboard = new Gameboard('player');
-                // const computer = new ComputerPlayer();
-                // const computerGameboard = new Gameboard('computer');
-                // for (const [shipName, arrOfCoords] of Object.entries(domController.shipLocations)) {
-                //     const shipNameFirstLetterCapitalised = shipName.slice(0,1).toUpperCase() + shipName.slice(1);
-                //     playerGameboard.createShipAndPlaceItOnBoard(shipNameFirstLetterCapitalised, ...arrOfCoords);
-                // }
-                // const computerCoords = domController.randomlyGenerateEnemyShipPlacements();
-                // for (const [shipName, arrOfCoords] of Object.entries(computerCoords)) {
-                //     const shipNameFirstLetterCapitalised = shipName.slice(0,1).toUpperCase() + shipName.slice(1);
-                //     computerGameboard.createShipAndPlaceItOnBoard(shipNameFirstLetterCapitalised, ...arrOfCoords);
-                // }
-                // domController.renderGameScreen(playerGameboard, computerGameboard, thePlayer, computer);
             }
 
-            domController.selectShipToPlace();
+            domController.selectNextShipToPlace();
             const uppercaseShipName = domController.currentShip.toUpperCase();
-            const status = document.querySelector('.status');
-            status.textContent = `REAR ADMIRAL ${playerNameUppercase}, PLACE YOUR ${uppercaseShipName}`;
+            status.textContent = `REAR ADMIRAL ${playerNameUppercase}, PLACE 
+            YOUR ${uppercaseShipName}`;
         }
+
         function handleMouseOver(e) {
 
             // clear the "ship shadow" on the grid from the previous mouseOver
             cells.forEach(cell => cell.classList.remove('ship'));
 
             /* must clear the following property with every mouseOver event
-            on a cell because if an illegible cell (eg. due to ship size) is mousedOver, this property
-            will not update, and then when the user clicks to place a ship
-            there will be issues */
+            on a cell because if an illegible cell (eg. due to ship size) is 
+            mousedOver, this property will not be updated */
             domController.whereToPlaceCurrentShip = null;
 
             let length;
@@ -367,16 +251,19 @@ class DOMController {
             const coordNumber = Number(mousePointerCoord.slice(1));
 
             if (domController.axis === 'HORIZONTAL') {
-                const digitOfCoordsWhereShipMightBePlaced = [];
+                const digitsOfCoordsWhereShipMightBePlaced = [];
                 for (let i=0; i < length; i++) {
                     const nextCellNum = coordNumber + i;
                     /* if placing a ship where the mouse currently is
                     would lead to the ship going off the board, do nothing,
                     because this will obviously not work */
                     if (nextCellNum > 10) return;
-                    digitOfCoordsWhereShipMightBePlaced.push(nextCellNum);
+                    digitsOfCoordsWhereShipMightBePlaced.push(nextCellNum);
                 }
-                domController.whereToPlaceCurrentShip = digitOfCoordsWhereShipMightBePlaced.map(number => coordLetter + number);
+                domController.whereToPlaceCurrentShip =
+                 digitsOfCoordsWhereShipMightBePlaced.map(number => {
+                     return coordLetter + number;
+                 });  
             }
 
             if (domController.axis === 'VERTICAL') {
@@ -405,7 +292,7 @@ class DOMController {
                     10: 'J',
                 };
                 const letterCodified = letterNumberHash[coordLetter];
-                const letterOfCoordsWhereShipMightBePlaced = [];
+                const lettersofCoordsWhereShipMightBePlaced = [];
                 for (let i=0; i < length; i++) {
                     let nextCellLetterCodified = letterCodified + i;
                     /* if placing a ship where the mouse currently is
@@ -414,9 +301,9 @@ class DOMController {
                     if (nextCellLetterCodified > 10) return;
                     nextCellLetterCodified = String(nextCellLetterCodified);
                     const nextCellLetter = numberLetterHash[nextCellLetterCodified];
-                    letterOfCoordsWhereShipMightBePlaced.push(nextCellLetter);
+                    lettersofCoordsWhereShipMightBePlaced.push(nextCellLetter);
                 }
-                domController.whereToPlaceCurrentShip = letterOfCoordsWhereShipMightBePlaced.map(letter => letter + coordNumber);
+                domController.whereToPlaceCurrentShip = lettersofCoordsWhereShipMightBePlaced.map(letter => letter + coordNumber);
             }
 
             if (domController.whereToPlaceCurrentShip) {
@@ -480,13 +367,15 @@ class DOMController {
         }
     }
 
-    renderGameScreen(playerGameboard, computerGameboard, player, computer) {
+    renderGameplay(playerGameboard, computerGameboard, player, computer) {
         /*on the first render of the gameScreen, sets the volumeIcon based on 
         whether or not the player had the music playing when the START button was
         clicked*/ 
         const volumeIcon = (
-            (this.introMusick.currentTime > 0 && (!this.introMusick.paused && !this.introMusick.ended))
-            || (this.sonarSound.currentTime > 0 && (!this.sonarSound.paused && !this.sonarSound.ended)) 
+            (this.introMusick.currentTime > 0 && (!this.introMusick.paused &&
+                 !this.introMusick.ended))
+            || (this.sonarSound.currentTime > 0 && (!this.sonarSound.paused &&
+                 !this.sonarSound.ended)) 
         ) ? '🔊︁' : '︁︁🔇';
 
         const playerNameUppercase = player.name.toUpperCase();
@@ -495,235 +384,16 @@ class DOMController {
         if (this.status === 'AWAITING ORDERS, REAR ADMIRAL') {
             this.status = `AWAITING ORDERS, REAR ADMIRAL ${playerNameUppercase}`;
         }
-
-        const html = `
-        <div class="main-container">
-            <header class="game-header">
-                <div class="game-title-container">
-                    <h1 class="game-title">BATTLESHIP</h1>
-                </div>
-                <h2 class="status">${this.status}</h2>
-                <a href="#" class="volume">${volumeIcon}</a>
-            </header>
-            <div class="game-board-container">
-                <div class="board-and-label-container">
-                    <h2 class="board-label">FRIENDLY FLEET</h2>
-                    <div class="game-player-board">
-                        <div class="cell player A1"><span class="invisible-dot">•</span></div>
-                        <div class="cell player A2"><span class="invisible-dot">•</span></div>
-                        <div class="cell player A3"><span class="invisible-dot">•</span></div>
-                        <div class="cell player A4"><span class="invisible-dot">•</span></div>
-                        <div class="cell player A5"><span class="invisible-dot">•</span></div>
-                        <div class="cell player A6"><span class="invisible-dot">•</span></div>
-                        <div class="cell player A7"><span class="invisible-dot">•</span></div>
-                        <div class="cell player A8"><span class="invisible-dot">•</span></div>
-                        <div class="cell player A9"><span class="invisible-dot">•</span></div>
-                        <div class="cell player A10"><span class="invisible-dot">•</span></div>
-                        <div class="cell player B1"><span class="invisible-dot">•</span></div>
-                        <div class="cell player B2"><span class="invisible-dot">•</span></div>
-                        <div class="cell player B3"><span class="invisible-dot">•</span></div>
-                        <div class="cell player B4"><span class="invisible-dot">•</span></div>
-                        <div class="cell player B5"><span class="invisible-dot">•</span></div>
-                        <div class="cell player B6"><span class="invisible-dot">•</span></div>
-                        <div class="cell player B7"><span class="invisible-dot">•</span></div>
-                        <div class="cell player B8"><span class="invisible-dot">•</span></div>
-                        <div class="cell player B9"><span class="invisible-dot">•</span></div>
-                        <div class="cell player B10"><span class="invisible-dot">•</span></div>
-                        <div class="cell player C1"><span class="invisible-dot">•</span></div>
-                        <div class="cell player C2"><span class="invisible-dot">•</span></div>
-                        <div class="cell player C3"><span class="invisible-dot">•</span></div>
-                        <div class="cell player C4"><span class="invisible-dot">•</span></div>
-                        <div class="cell player C5"><span class="invisible-dot">•</span></div>
-                        <div class="cell player C6"><span class="invisible-dot">•</span></div>
-                        <div class="cell player C7"><span class="invisible-dot">•</span></div>
-                        <div class="cell player C8"><span class="invisible-dot">•</span></div>
-                        <div class="cell player C9"><span class="invisible-dot">•</span></div>
-                        <div class="cell player C10"><span class="invisible-dot">•</span></div>
-                        <div class="cell player D1"><span class="invisible-dot">•</span></div>
-                        <div class="cell player D2"><span class="invisible-dot">•</span></div>
-                        <div class="cell player D3"><span class="invisible-dot">•</span></div>
-                        <div class="cell player D4"><span class="invisible-dot">•</span></div>
-                        <div class="cell player D5"><span class="invisible-dot">•</span></div>
-                        <div class="cell player D6"><span class="invisible-dot">•</span></div>
-                        <div class="cell player D7"><span class="invisible-dot">•</span></div>
-                        <div class="cell player D8"><span class="invisible-dot">•</span></div>
-                        <div class="cell player D9"><span class="invisible-dot">•</span></div>
-                        <div class="cell player D10"><span class="invisible-dot">•</span></div>  
-                        <div class="cell player E1"><span class="invisible-dot">•</span></div>
-                        <div class="cell player E2"><span class="invisible-dot">•</span></div>
-                        <div class="cell player E3"><span class="invisible-dot">•</span></div>
-                        <div class="cell player E4"><span class="invisible-dot">•</span></div>
-                        <div class="cell player E5"><span class="invisible-dot">•</span></div>
-                        <div class="cell player E6"><span class="invisible-dot">•</span></div>
-                        <div class="cell player E7"><span class="invisible-dot">•</span></div>
-                        <div class="cell player E8"><span class="invisible-dot">•</span></div>
-                        <div class="cell player E9"><span class="invisible-dot">•</span></div>
-                        <div class="cell player E10"><span class="invisible-dot">•</span></div>
-                        <div class="cell player F1"><span class="invisible-dot">•</span></div>
-                        <div class="cell player F2"><span class="invisible-dot">•</span></div>
-                        <div class="cell player F3"><span class="invisible-dot">•</span></div>
-                        <div class="cell player F4"><span class="invisible-dot">•</span></div>
-                        <div class="cell player F5"><span class="invisible-dot">•</span></div>
-                        <div class="cell player F6"><span class="invisible-dot">•</span></div>
-                        <div class="cell player F7"><span class="invisible-dot">•</span></div>
-                        <div class="cell player F8"><span class="invisible-dot">•</span></div>
-                        <div class="cell player F9"><span class="invisible-dot">•</span></div>
-                        <div class="cell player F10"><span class="invisible-dot">•</span></div>
-                        <div class="cell player G1"><span class="invisible-dot">•</span></div>
-                        <div class="cell player G2"><span class="invisible-dot">•</span></div>
-                        <div class="cell player G3"><span class="invisible-dot">•</span></div>
-                        <div class="cell player G4"><span class="invisible-dot">•</span></div>
-                        <div class="cell player G5"><span class="invisible-dot">•</span></div>
-                        <div class="cell player G6"><span class="invisible-dot">•</span></div>
-                        <div class="cell player G7"><span class="invisible-dot">•</span></div>
-                        <div class="cell player G8"><span class="invisible-dot">•</span></div>
-                        <div class="cell player G9"><span class="invisible-dot">•</span></div>
-                        <div class="cell player G10"><span class="invisible-dot">•</span></div>
-                        <div class="cell player H1"><span class="invisible-dot">•</span></div>
-                        <div class="cell player H2"><span class="invisible-dot">•</span></div>
-                        <div class="cell player H3"><span class="invisible-dot">•</span></div>
-                        <div class="cell player H4"><span class="invisible-dot">•</span></div>
-                        <div class="cell player H5"><span class="invisible-dot">•</span></div>
-                        <div class="cell player H6"><span class="invisible-dot">•</span></div>
-                        <div class="cell player H7"><span class="invisible-dot">•</span></div>
-                        <div class="cell player H8"><span class="invisible-dot">•</span></div>
-                        <div class="cell player H9"><span class="invisible-dot">•</span></div>
-                        <div class="cell player H10"><span class="invisible-dot">•</span></div>
-                        <div class="cell player I1"><span class="invisible-dot">•</span></div>
-                        <div class="cell player I2"><span class="invisible-dot">•</span></div>
-                        <div class="cell player I3"><span class="invisible-dot">•</span></div>
-                        <div class="cell player I4"><span class="invisible-dot">•</span></div>
-                        <div class="cell player I5"><span class="invisible-dot">•</span></div>
-                        <div class="cell player I6"><span class="invisible-dot">•</span></div>
-                        <div class="cell player I7"><span class="invisible-dot">•</span></div>
-                        <div class="cell player I8"><span class="invisible-dot">•</span></div>
-                        <div class="cell player I9"><span class="invisible-dot">•</span></div>
-                        <div class="cell player I10"><span class="invisible-dot">•</span></div>
-                        <div class="cell player J1"><span class="invisible-dot">•</span></div>
-                        <div class="cell player J2"><span class="invisible-dot">•</span></div>
-                        <div class="cell player J3"><span class="invisible-dot">•</span></div>
-                        <div class="cell player J4"><span class="invisible-dot">•</span></div>
-                        <div class="cell player J5"><span class="invisible-dot">•</span></div>
-                        <div class="cell player J6"><span class="invisible-dot">•</span></div>
-                        <div class="cell player J7"><span class="invisible-dot">•</span></div>
-                        <div class="cell player J8"><span class="invisible-dot">•</span></div>
-                        <div class="cell player J9"><span class="invisible-dot">•</span></div>
-                        <div class="cell player J10"><span class="invisible-dot">•</span></div>
-                    </div>
-                </div>
-                <div class="board-and-label-container">
-                    <h2 class="board-label">ENEMY FLEET</h2>
-                    <div class="game-computer-board">
-                        <div class="cell computer A1"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer A2"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer A3"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer A4"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer A5"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer A6"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer A7"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer A8"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer A9"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer A10"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer B1"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer B2"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer B3"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer B4"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer B5"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer B6"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer B7"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer B8"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer B9"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer B10"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer C1"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer C2"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer C3"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer C4"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer C5"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer C6"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer C7"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer C8"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer C9"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer C10"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer D1"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer D2"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer D3"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer D4"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer D5"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer D6"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer D7"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer D8"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer D9"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer D10"><span class="invisible-dot">•</span></div>  
-                        <div class="cell computer E1"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer E2"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer E3"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer E4"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer E5"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer E6"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer E7"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer E8"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer E9"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer E10"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer F1"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer F2"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer F3"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer F4"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer F5"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer F6"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer F7"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer F8"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer F9"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer F10"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer G1"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer G2"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer G3"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer G4"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer G5"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer G6"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer G7"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer G8"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer G9"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer G10"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer H1"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer H2"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer H3"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer H4"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer H5"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer H6"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer H7"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer H8"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer H9"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer H10"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer I1"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer I2"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer I3"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer I4"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer I5"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer I6"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer I7"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer I8"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer I9"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer I10"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer J1"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer J2"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer J3"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer J4"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer J5"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer J6"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer J7"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer J8"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer J9"><span class="invisible-dot">•</span></div>
-                        <div class="cell computer J10"><span class="invisible-dot">•</span></div>
-                    </div>
-                </div>
-            </div>
-                `;
+        
         const body = document.querySelector('body');
         body.innerHTML = '';
-        body.insertAdjacentHTML('afterbegin', html);     
+        body.insertAdjacentHTML('afterbegin', gameplayHTML);     
 
-        const volumeATag = document.querySelector('.volume');
-        volumeATag.addEventListener('click', domController.handleVolumeIconClick);
+        const volumeIconAnchor = document.querySelector('.volume');
+        volumeIconAnchor.textContent = volumeIcon;
+        const status = document.querySelector('.status');
+        status.textContent = this.status;
+        volumeIconAnchor.addEventListener('click', domController.handleVolumeIconClick);
 
         const computerBoard = document.querySelector('.game-computer-board');
         const computerCells = computerBoard.querySelectorAll('.cell');
@@ -849,11 +519,11 @@ class DOMController {
                 return;
             }
 
-            domController.renderGameScreen(playerGameboard, computerGameboard, player, computer);
+            domController.renderGameplay(playerGameboard, computerGameboard, player, computer);
         }
 
         function playSounds(typeOfSounds) {
-            if (volumeATag.textContent === '︁︁🔇') return;
+            if (volumeIconAnchor.textContent === '︁︁🔇') return;
             let soundUrls;
             if (typeOfSounds === 'hitSounds') {
                 soundUrls = [explosion1, explosion2, explosion3];
