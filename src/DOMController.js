@@ -21,6 +21,7 @@ class DOMController {
         this.introMusick = null;
         this.sonarSound = null;
         this.handleVolumeIconClick = this.handleVolumeIconClick.bind(this);
+        this.handleKeyDown = this.handleKeyDown.bind(this);
         this.ifThereIsAWinnerAnnounceIt = this.ifThereIsAWinnerAnnounceIt.bind(this);
         this.shipLocations = {
             carrier: null,
@@ -114,6 +115,13 @@ class DOMController {
         }
     }
 
+    handleKeyDown(e) {
+        if (e.code === 'Enter') {
+            e.preventDefault();
+            document.querySelector('.start-button').click();
+        }
+    }
+
     selectNextShipToPlace() {
         const ships = domController.shipLocations;
         if (ships.carrier === null) {
@@ -162,6 +170,8 @@ class DOMController {
 
     renderPlaceShipsScreen(player) {
         domController.selectNextShipToPlace();
+
+        document.removeEventListener('keydown', domController.handleKeyDown);
         
         const body = document.querySelector('body');
         body.innerHTML = placeShipsHTML;
@@ -365,6 +375,7 @@ class DOMController {
   
         volume.addEventListener('click', domController.handleVolumeIconClick);
         startButton.addEventListener('click', handleStartBtn);
+        document.addEventListener('keydown', domController.handleKeyDown);
 
         function handleStartBtn(e) {
             e.preventDefault();
