@@ -164,7 +164,8 @@ class DOMController {
         domController.selectNextShipToPlace();
         
         const body = document.querySelector('body');
-        body.insertAdjacentHTML('afterbegin', placeShipsHTML);
+        body.innerHTML = placeShipsHTML;
+        // body.insertAdjacentHTML('afterbegin', placeShipsHTML);
         const status = document.querySelector('.status');
         const volumeIconAnchor = document.querySelector('.set-ships-screen-volume');
         const changeAxisBtn = document.querySelector('.change-axis');
@@ -391,7 +392,8 @@ class DOMController {
         const playerNameUppercase = player.name.toUpperCase();
    
         const body = document.querySelector('body');
-        body.insertAdjacentHTML('afterbegin', gameplayHTML);     
+        body.innerHTML = gameplayHTML;
+        // body.insertAdjacentHTML('afterbegin', gameplayHTML);     
 
         const volumeIconAnchor = document.querySelector('.volume');
         const computerBoard = document.querySelector('.game-computer-board');
