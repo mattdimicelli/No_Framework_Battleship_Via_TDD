@@ -3,7 +3,7 @@
 
 ## Overview
 
-The classic Battleship game, built via Test Driven Development (TDD). Specifically, the games's logic was written separate from the DOM controller, and is was the former which was written with TDD.  
+The classic Battleship game, built via Test Driven Development (TDD). Specifically, the game's logic was written separate from the DOM controller, and it was the former which was written with TDD.  
 
 ### Challenge
 
