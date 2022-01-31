@@ -17,8 +17,8 @@ The design requirements from The Odin Project to make a Battleship app are detai
 
 ### Links
 
-- [Live site](https://mattdimicelli.github.io/Battleship/)
-- [Repo](https://github.com/mattdimicelli/Battleship)
+- [Live site](https://mattdimicelli.github.io/No_Framework_Battleship_Via_TDD/)
+- [Repo](https://github.com/mattdimicelli/No_Framework_Battleship_Via_TDD)
 
 ## My process
 
